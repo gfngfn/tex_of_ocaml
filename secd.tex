@@ -138,10 +138,10 @@
   %% #6 : dump
   \secd@Run{%
   %% next stack:
-    #3%
+    #2%
   }{%
   %% next environment:
-    \secd@VAL{#4}#5%
+    #3#5%
   }{%
   %% next code:
     #4%
@@ -168,7 +168,7 @@
   %% #2 : stack (that should implicitly be non-empty)
   %% #3 : environment (that will be discarded)
   %% \secd@CLOS#4#5 : closure (#4 : code, #5 : environment)
-  %% #6 : rest of the dump
+  %% #6 : subsequent element of the dump
   \secd@Run{%
   %% next stack:
     #2%
