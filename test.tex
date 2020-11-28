@@ -1,8 +1,9 @@
 \documentclass{jsarticle}
 \usepackage{secd}
-\begin{document}
-  \tracingmacros=1\relax
-  \makeatletter
+\makeatletter
+\tracingmacros=1\relax
+%% Evaluate `(fun x -> "foo" ^ "bar" ^ x) "baz"`
+\edef\result{%
   \secd@EvalAndShowString{%
     \secd@Run{}{}{%
       \secd@CLOSURE{%
@@ -16,5 +17,9 @@
       \secd@APPLY{}%
     }{}%
   }%
-  \makeatother
+}
+\tracingmacros=0\relax
+\makeatother
+\begin{document}
+  \result
 \end{document}
