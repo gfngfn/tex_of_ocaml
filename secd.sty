@@ -363,6 +363,37 @@
   %% #2 : (the number to subtract) - 1
   \secd@PrimitiveIntSub@Iter{#1}{#2}%
 }
+%% == Integer multiplication ==
+\def\secd@PrimitiveIntMult#1\secd@End{%
+  %% #1 : stack that should have at least two elements
+  \secd@PrimitiveIntMult@i#1\secd@End
+}
+\def\secd@PrimitiveIntMult@i\secd@INT#1\secd@ENDVAL#2\secd@End{%
+  %% \secd@INT#1\secd@ENDVAL : the first element of the stack (i.e. the second argument)
+  %% #2                      : the rest of the stack
+  \secd@PrimitiveIntMult@ii{#1}#2\secd@End
+}
+\def\secd@PrimitiveIntMult@ii#1\secd@INT#2\secd@ENDVAL#3\secd@End{%
+  %% \secd@INT#1\secd@ENDVAL : the first element of the stack (i.e. the second argument)
+  %% \secd@INT#2\secd@ENDVAL : the second element of the stack (i.e. the first argument)
+  \secd@PrimitiveIntMult@Iter{}{#1}{#2}#3%
+}
+\def\secd@PrimitiveIntMult@Iter#1#2#3{%
+  %% #1 : accumulator
+  %% #2 : the multiplied number
+  %% #3 : the number to multiply
+  \ifx\secd@unique#2\secd@unique\secd@Then
+    \secd@INT{#1}\secd@ENDVAL
+  \else\secd@Hop
+    \secd@PrimitiveIntMult@Iter@i{#1}#2\secd@End{#3}%
+  \fi
+}
+\def\secd@PrimitiveIntMult@Iter@i#1o#2\secd@End#3{%
+  %% #1 : accumulator
+  %% #2 : (the multiplied number) - 1
+  %% #3 : the number to multiply
+  \secd@PrimitiveIntMult@Iter{#1#3}{#2}{#3}%
+}
 
 %% == Integer display ==
 \def\secd@EvalAndShowInt#1{%
