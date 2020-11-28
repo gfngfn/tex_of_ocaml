@@ -1,14 +1,20 @@
 \documentclass{jsarticle}
 \usepackage{secd}
 \begin{document}
-  %\tracingmacros=1\relax
+  \tracingmacros=1\relax
   \makeatletter
-  \secd@Run{}{}{%
-    \secd@CONST{\secd@STRING{foo}}%
-    \secd@CONST{\secd@STRING{bar}}%
-    \secd@PRIM{\secd@PrimitiveStringConcat}%
-    \secd@CONST{\secd@STRING{baz}}%
-    \secd@PRIM{\secd@PrimitiveStringConcat}%
-  }{}%
+  \secd@EvalAndShowString{%
+    \secd@Run{}{}{%
+      \secd@CLOSURE{%
+        \secd@CONST{\secd@STRING{foo}\secd@ENDVAL}%
+        \secd@CONST{\secd@STRING{bar}\secd@ENDVAL}%
+        \secd@PRIM{\secd@PrimitiveStringConcat}%
+        \secd@ACCESS{}%
+        \secd@PRIM{\secd@PrimitiveStringConcat}%
+      }%
+      \secd@CONST{\secd@STRING{baz}\secd@ENDVAL}%
+      \secd@APPLY{}%
+    }{}%
+  }%
   \makeatother
 \end{document}

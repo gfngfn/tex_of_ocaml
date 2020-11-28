@@ -6,6 +6,8 @@
 
 
 \def\secd@unique{\secd@unique@dummy}
+\def\secd@Then#1\else#2\fi{\else\fi#1}
+\def\secd@Hop#1\fi{\fi#1}
 
 \def\secd@Error#1{Error: #1}
 
@@ -30,12 +32,12 @@
   %% #2 : environment
   %% #3 : code
   %% #4 : dump
-  \ifx\secd@unique#3\secd@unique
+  \ifx\secd@unique#3\secd@unique\secd@Then
     %% If code is empty, return the stack
     #1%
   \else
     %% Dummy message:
-    \expandafter\message\expandafter{\expandafter\string\secd@Car#3\secd@End}%
+    %\expandafter\message\expandafter{\expandafter\string\secd@Car#3\secd@End}%
     %% Handle the instruction (by using `\secd@HandleXXXX`)
     #3\secd@End{#1}{#2}{#4}%
   \fi
@@ -47,10 +49,9 @@
   %% #3 : stack
   %% #4 : environment
   %% #5 : dump
-  \secd@Run{%
+  \expandafter\secd@Run\expandafter{%
   %% next stack:
-    %% TODO: should evaluate the first argument before application
-    \expandafter\secd@PushToStack\expandafter{\romannumeral-`0\secd@AccessIndex{#1}{#2}}{#3}%
+    \romannumeral-`0\secd@AccessIndex{#1}{#4}#3%
   }{%
   %% next environment:
     #4%
@@ -67,27 +68,28 @@
   %% This command will be used *under the complete expansion* by `\romannumeral`.
   %% #1 : index for the access
   %% #2 : environment
-  \ifx\secd@unique#2\secd@unique
+  \ifx\secd@unique#2\secd@unique\secd@Then
     %% If the given environment is empty, return the ERROR value.
-    \secd@ERROR{unbound}%
-  \else
+    \secd@ERROR{unbound}\secd@ENDVAL
+  \else\secd@Hop
     \secd@AccessIndexToNonEmptyEnvironment{#1}#2\secd@End
   \fi
 }
-\def\secd@AccessIndexToNonEmptyEnvironment#1#2#3\secd@End{%
-  %% #1   : index for the access
-  %% #2#3 : non-empty environment
-  \ifx\secd@unique#1\secd@unique
+\def\secd@AccessIndexToNonEmptyEnvironment#1#2\secd@ENDVAL#3\secd@End{%
+  %% #1             : index for the access
+  %% #2\secd@ENDVAL : the first value in the environment
+  %% #3             : the rest of the environment
+  \ifx\secd@unique#1\secd@unique\secd@Then
     %% If the given index is zero, return the first value in the environment.
-    #2%
-  \else
+    #2\secd@ENDVAL
+  \else\secd@Hop
     %% If the given index is positive, decrement the index,
     %% remove the first element from the environment,
     %% and iteratively call the command.
     \secd@AccessNonZeroIndex#1\secd@End{#3}%
   \fi
 }
-\def\secd@AccessIndex*#1\secd@End#2{%
+\def\secd@AccessNonZeroIndex*#1\secd@End#2{%
   %% #1 : decremented index for the access
   %% #2 : tail environment
   \secd@AccessIndex{#1}{#2}%
@@ -101,7 +103,7 @@
   %% #5 : dump
   \secd@Run{%
   %% next stack:
-    \secd@PushToStack{\secd@CLOS{#1}{#4}}{#3}%
+    \secd@CLOS{#1}{#4}\secd@ENDVAL#3%
   }{%
   %% next environment:
     #4%
@@ -120,42 +122,42 @@
   %% #3 : stack
   %% #4 : environment
   %% #5 : dump
-  \ifx\secd@unique#3\secd@unique
+  \ifx\secd@unique#3\secd@unique\secd@Then
     \secd@Error{stack underflow (1)}%
-  \else
+  \else\secd@Hop
     \secd@HandleAPPLY@i#3\secd@End{#2}{#4}{#5}%
   \fi
 }
-\def\secd@HandleAPPLY@i#1#2\secd@End#3#4#5{%
-  %% #1 : the first element of the stack
-  %% #2 : the subsequent elements of the stack
-  %% #3 : susequent code
-  %% #4 : environment
-  %% #5 : dump
-  \ifx\secd@unique#2\secd@unique
+\def\secd@HandleAPPLY@i#1\secd@ENDVAL#2\secd@End#3#4#5{%
+  %% #1\secd@ENDVAL : the first element of the stack
+  %% #2             : the subsequent elements of the stack
+  %% #3             : susequent code
+  %% #4             : environment
+  %% #5             : dump
+  \ifx\secd@unique#2\secd@unique\secd@Then
     \secd@Error{stack underflow (2)}%
-  \else
-    \secd@HandleAPPLY@ii#2\secd@End{#1}{#3}{#4}{#5}%
+  \else\secd@Hop
+    \secd@HandleAPPLY@ii#2\secd@End{#1\secd@ENDVAL}{#3}{#4}{#5}%
   \fi
 }
-\def\secd@HandleAPPLY@ii#1#2\secd@End#3#4#5#6{%
-  %% #1 : the second element of the stack (that should be a closure)
-  %% #2 : the subsequent elements of the stack
-  %% #3 : the first element of the stack
-  %% #4 : susequent code
-  %% #5 : environment
-  %% #6 : dump
+\def\secd@HandleAPPLY@ii\secd@CLOS#1#2\secd@ENDVAL#3\secd@End#4#5#6#7{%
+  %% \secd@CLOS#1#2\secd@ENDVAL : the second element of the stack (#1 : code, #2 : environment)
+  %% #3             : the subsequent elements of the stack
+  %% #4             : the first element of the stack (that includes `\secd@ENDVAL`)
+  %% #5             : subsequent code
+  %% #6             : environment
+  %% #7             : dump
   \secd@Run{%
   %% next stack:
     #2%
   }{%
   %% next environment:
-    #3#5%
+    #4#2%
   }{%
   %% next code:
-    #4%
+    #1%
   }{%
-    #1#6%
+    \secd@DUMP{#5}{#6}#7%
   }%
 }
 \def\secd@HandleRETURN#1#2\secd@End#3#4#5{%
@@ -165,19 +167,19 @@
   %% #3 : stack
   %% #4 : environment
   %% #5 : dump
-  \ifx\secd@unique#5\secd@unique
+  \ifx\secd@unique#5\secd@unique\secd@Then
     %% If the dump is empty, emit an error.
     \secd@Error{dump underflow}%
-  \else
+  \else\secd@Hop
     \secd@HandleRETURN@i{#2}{#3}{#4}#5\secd@End
   \fi
 }
-\def\secd@HandleRETURN@i#1#2#3\secd@CLOS#4#5#6\secd@End{%
-  %% #1 : subsequent code (that will be discarded)
-  %% #2 : stack (that should implicitly be non-empty)
-  %% #3 : environment (that will be discarded)
-  %% \secd@CLOS#4#5 : closure (#4 : code, #5 : environment)
-  %% #6 : subsequent element of the dump
+\def\secd@HandleRETURN@i#1#2#3\secd@DUMP#4#5#6\secd@End{%
+  %% #1             : subsequent code (that will be discarded)
+  %% #2             : stack (that should implicitly be non-empty)
+  %% #3             : environment (that will be discarded)
+  %% \secd@DUMP#4#5 : dumped entry (#4 : code, #5 : environment)
+  %% #6             : subsequent element of the dump
   \secd@Run{%
   %% next stack:
     #2%
@@ -194,7 +196,7 @@
 }
 \def\secd@HandleCONST#1#2\secd@End#3#4#5{%
   %% Handle CONST instruction and run the next configuration.
-  %% #1 : constant value
+  %% #1 : constant value (that includes `\secd@ENDVAL`)
   %% #2 : subsequent code
   %% #3 : stack
   %% #4 : environment
@@ -242,18 +244,22 @@
     \secd@PrimitiveStringConcat@i#1\secd@End
 %  \fi
 }
-\def\secd@PrimitiveStringConcat@i\secd@STRING#1#2\secd@End{%
-  %% \secd@STRING#1 : the first element of the stack (i.e. the second argument)
-  %% #2             : the rest of the stack
+\def\secd@PrimitiveStringConcat@i\secd@STRING#1\secd@ENDVAL#2\secd@End{%
+  %% \secd@STRING#1\secd@ENDVAL : the first element of the stack (i.e. the second argument)
+  %% #2                         : the rest of the stack
 %  \ifx\secd@unique#2\secd@unique
 %    \secd@ERROR{stack underflow (string concat 2)}%
 %  \else
     \secd@PrimitiveStringConcat@ii{#1}#2\secd@End
 %  \fi
 }
-\def\secd@PrimitiveStringConcat@ii#1\secd@STRING#2#3\secd@End{%
-  %% \secd@STRING#1 : the first element of the stack (i.e. the second argument)
-  %% \secd@STRING#2 : the second element of the stack (i.e. the first argument)
-  %% #3             : the rest of the stack
-  \secd@STRING{#2#1}#3%
+\def\secd@PrimitiveStringConcat@ii#1\secd@STRING#2\secd@ENDVAL#3\secd@End{%
+  %% \secd@STRING#1\secd@ENDVAL : the first element of the stack (i.e. the second argument)
+  %% \secd@STRING#2\secd@ENDVAL : the second element of the stack (i.e. the first argument)
+  %% #3                         : the rest of the stack
+  \secd@STRING{#2#1}\secd@ENDVAL#3%
 }
+\def\secd@EvalAndShowString#1{%
+  \expandafter\secd@ShowString\romannumeral-`0#1%
+}
+\def\secd@ShowString\secd@STRING#1\secd@ENDVAL{#1}
