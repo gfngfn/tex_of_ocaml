@@ -2,7 +2,7 @@
 \usepackage{secd}
 \makeatletter
 \tracingmacros=1\relax
-%% Evaluate `(fun x -> "foo" ^ "bar" ^ x) "baz"`
+%% Evaluate `(fun x -> "foo" ^ "bar" ^ x) "baz"`.
 \edef\resultA{%
   \secd@EvalAndShowString{%
     \secd@Run{}{}{%
@@ -12,8 +12,31 @@
         \secd@PRIM{\secd@PrimitiveStringConcat}%
         \secd@ACCESS{}%
         \secd@PRIM{\secd@PrimitiveStringConcat}%
+        \secd@RETURN{}%
       }%
       \secd@CONST{\secd@STRING{baz}\secd@ENDVAL}%
+      \secd@APPLY{}%
+    }{}%
+  }%
+}
+%% Evaluate `(fun x -> (fun y -> y ^ "bar" ^ x)) "baz" "foo"`
+\edef\resultAA{%
+  \secd@EvalAndShowString{%
+    \secd@Run{}{}{%
+      \secd@CLOSURE{%
+        \secd@CLOSURE{%
+          \secd@ACCESS{}%
+          \secd@CONST{\secd@STRING{bar}\secd@ENDVAL}%
+          \secd@PRIM{\secd@PrimitiveStringConcat}%
+          \secd@ACCESS{*}%
+          \secd@PRIM{\secd@PrimitiveStringConcat}%
+          \secd@RETURN{}%
+        }%
+        \secd@RETURN{}%
+      }%
+      \secd@CONST{\secd@STRING{baz}\secd@ENDVAL}%
+      \secd@APPLY{}%
+      \secd@CONST{\secd@STRING{foo}\secd@ENDVAL}%
       \secd@APPLY{}%
     }{}%
   }%
@@ -28,8 +51,18 @@
     }{}%
   }%
 }
+%% Evaluate `(14 - 9)`
+\edef\resultC{%
+  \secd@EvalAndShowInt{%
+    \secd@Run{}{}{%
+      \secd@CONST{\secd@INT{oooooooooooooo}\secd@ENDVAL}%
+      \secd@CONST{\secd@INT{ooooooooo}\secd@ENDVAL}%
+      \secd@PRIM{\secd@PrimitiveIntSub}%
+    }{}%
+  }%
+}
 \tracingmacros=0\relax
 \makeatother
 \begin{document}
-  \resultA, \resultB
+  \resultA, \resultAA, \resultB, \resultC
 \end{document}
