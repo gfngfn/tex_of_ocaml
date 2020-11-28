@@ -9,6 +9,8 @@
 
 \def\secd@Error#1{Error: #1}
 
+\def\secd@Car#1#2\secd@End{#1}
+
 %% == Instruction tags ==
 \def\secd@ACCESS{\secd@HandleACCESS}
 \def\secd@CLOSURE{\secd@HandleCLOSURE}
@@ -32,6 +34,8 @@
     %% If code is empty, return the stack
     #1%
   \else
+    %% Dummy message:
+    \expandafter\message\expandafter{\expandafter\string\secd@Car#3\secd@End}%
     %% Handle the instruction (by using `\secd@HandleXXXX`)
     #3\secd@End{#1}{#2}{#4}%
   \fi
