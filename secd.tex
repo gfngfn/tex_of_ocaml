@@ -17,6 +17,11 @@
 \def\secd@CONST{\secd@HandleCONST}
 \def\secd@PRIM{\secd@HandlePRIM}
 
+%% == Value tags (which should be non-expansive) ==
+\let\secd@VAL\relax
+\let\secd@CLOS\relax
+\let\secd@ERROR\relax
+
 %% == Interpreter ==
 \def\secd@Run#1#2#3#4{%
   %% #1 : stack
@@ -181,5 +186,47 @@
   }{%
   %% next dump:
     #6%
+  }%
+}
+\def\secd@HandleCONST#1#2\secd@End#3#4#5{%
+  %% Handle CONST instruction and run the next configuration.
+  %% #1 : constant value
+  %% #2 : subsequent code
+  %% #3 : stack
+  %% #4 : environment
+  %% #5 : dump
+  \secd@Run{%
+  %% next stack:
+    \secd@VAL{#1}#3%
+  }{%
+  %% next environment:
+    #4%
+  }{%
+  %% next code:
+    #2%
+  }{%
+  %% next dump:
+    #5%
+  }%
+}
+\def\secd@HandlePRIM#1#2\secd@End#3#4#5{%
+  %% Handle PRIM instruction and run the next configuration.
+  %% #1 : primitive command
+  %% #2 : subsequent code
+  %% #3 : stack
+  %% #4 : environment
+  %% #5 : dump
+  \expandafter\secd@Run\expandafter{%
+  %% next stack:
+    \romannumeral-`0#1#3%
+  }{%
+  %% next environment:
+    #4%
+  }{%
+  %% next code:
+    #2%
+  }{%
+  %% next dump:
+    #5%
   }%
 }
