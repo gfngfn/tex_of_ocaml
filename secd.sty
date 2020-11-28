@@ -54,9 +54,9 @@
 }
 \def\secd@Finish#1\secd@ENDVAL#2\secd@End{%
   \ifx\secd@unique#2\secd@unique\secd@Then
-    \secd@Error{not an empty stack}%
-  \else\secd@Hop
     #1\secd@ENDVAL
+  \else\secd@Hop
+    \secd@Error{not an empty stack}%
   \fi
 }
 \def\secd@HandleACCESS#1#2\secd@End#3#4#5{%
@@ -256,7 +256,7 @@
   %%
   %%   (S', E, (PRIM p) :: C, D) ---> (V :: S, E, C, D)
   %%     where S' is of the form (V_n :: … :: V_1 :: S),
-  %%     n is the arity of p and V is the result of p(V_1, …, V_n)
+  %%     n is the arity of p, and V is the result of p(V_1, …, V_n)
   %%
   %% #1 = p  : primitive command
   %% #2 = C  : subsequent code
