@@ -1,0 +1,185 @@
+%% Premise:
+%%
+%% - The interpreter is implemented based on the SECD Machine.
+%% - Natural numbers used as indices are represented by (possibly empty) lists of `*`
+%%   (see `\secd@AccessNonZeroIndex`).
+
+
+\def\secd@unique{\secd@unique@dummy}
+
+\def\secd@Error#1{Error: #1}
+
+%% == Instruction tags ==
+\def\secd@ACCESS{\secd@HandleACCESS}
+\def\secd@CLOSURE{\secd@HandleCLOSURE}
+\def\secd@APPLY{\secd@HandleAPPLY}
+\def\secd@RETURN{\secd@HandleRETURN}
+\def\secd@CONST{\secd@HandleCONST}
+\def\secd@PRIM{\secd@HandlePRIM}
+
+%% == Interpreter ==
+\def\secd@Run#1#2#3#4{%
+  %% #1 : stack
+  %% #2 : environment
+  %% #3 : code
+  %% #4 : dump
+  \ifx\secd@unique#3\secd@unique
+    %% If code is empty, return the stack
+    #1%
+  \else
+    %% Handle the instruction (by using `\secd@HandleXXXX`)
+    #3\secd@End{#1}{#2}{#4}%
+  \fi
+}
+\def\secd@HandleACCESS#1#2\secd@End#3#4#5{%
+  %% Handle ACCESS instruction and run the next configuration.
+  %% #1 : index for the access
+  %% #2 : subsequent code
+  %% #3 : stack
+  %% #4 : environment
+  %% #5 : dump
+  \secd@Run{%
+  %% next stack:
+    %% TODO: should evaluate the first argument before application
+    \expandafter\secd@PushToStack\expandafter{\romannumeral-`0\secd@AccessIndex{#1}{#2}}{#3}%
+  }{%
+  %% next environment:
+    #4%
+  }{%
+  %% next code:
+    #2%
+  }{%
+  %% next dump:
+    #5%
+  }%
+}
+\def\secd@AccessIndex#1#2{%
+  %% Extract the value from the environment.
+  %% This command will be used *under the complete expansion* by `\romannumeral`.
+  %% #1 : index for the access
+  %% #2 : environment
+  \ifx\secd@unique#2\secd@unique
+    %% If the given environment is empty, return the ERROR value.
+    \secd@ERROR{unbound}%
+  \else
+    \secd@AccessIndexToNonEmptyEnvironment{#1}#2\secd@End
+  \fi
+}
+\def\secd@AccessIndexToNonEmptyEnvironment#1#2#3\secd@End{%
+  %% #1   : index for the access
+  %% #2#3 : non-empty environment
+  \ifx\secd@unique#1\secd@unique
+    %% If the given index is zero, return the first value in the environment.
+    #2%
+  \else
+    %% If the given index is positive, decrement the index,
+    %% remove the first element from the environment,
+    %% and iteratively call the command.
+    \secd@AccessNonZeroIndex#1\secd@End{#3}%
+  \fi
+}
+\def\secd@AccessIndex*#1\secd@End#2{%
+  %% #1 : decremented index for the access
+  %% #2 : tail environment
+  \secd@AccessIndex{#1}{#2}%
+}
+\def\secd@HandleCLOSURE#1#2\secd@End#3#4#5{%
+  %% Handle CLOSURE instruction and run the next configuration.
+  %% #1 : code contained in the closure
+  %% #2 : subsequent code
+  %% #3 : stack
+  %% #4 : environment
+  %% #5 : dump
+  \secd@Run{%
+  %% next stack:
+    \secd@PushToStack{\secd@CLOS{#1}{#4}}{#3}%
+  }{%
+  %% next environment:
+    #4%
+  }{%
+  %% next code:
+    #2%
+  }{%
+  %% next dump:
+    #5%
+  }%
+}
+\def\secd@HandleAPPLY#1#2\secd@End#3#4#5{%
+  %% Handle APPLY instruction and run the next configuration.
+  %% #1 : dummy argument
+  %% #2 : subsequent code
+  %% #3 : stack
+  %% #4 : environment
+  %% #5 : dump
+  \ifx\secd@unique#3\secd@unique
+    \secd@Error{stack underflow (1)}%
+  \else
+    \secd@HandleAPPLY@i#3\secd@End{#2}{#4}{#5}%
+  \fi
+}
+\def\secd@HandleAPPLY@i#1#2\secd@End#3#4#5{%
+  %% #1 : the first element of the stack
+  %% #2 : the subsequent elements of the stack
+  %% #3 : susequent code
+  %% #4 : environment
+  %% #5 : dump
+  \ifx\secd@unique#2\secd@unique
+    \secd@Error{stack underflow (2)}%
+  \else
+    \secd@HandleAPPLY@ii#2\secd@End{#1}{#3}{#4}{#5}%
+  \fi
+}
+\def\secd@HandleAPPLY@ii#1#2\secd@End#3#4#5#6{%
+  %% #1 : the second element of the stack (that should be a closure)
+  %% #2 : the subsequent elements of the stack
+  %% #3 : the first element of the stack
+  %% #4 : susequent code
+  %% #5 : environment
+  %% #6 : dump
+  \secd@Run{%
+  %% next stack:
+    #3%
+  }{%
+  %% next environment:
+    \secd@VAL{#4}#5%
+  }{%
+  %% next code:
+    #4%
+  }{%
+    #1#6%
+  }%
+}
+\def\secd@HandleRETURN#1#2\secd@End#3#4#5{%
+  %% Handle RETURN instruction and run the next configuration.
+  %% #1 : dummy argument
+  %% #2 : subsequent code
+  %% #3 : stack
+  %% #4 : environment
+  %% #5 : dump
+  \ifx\secd@unique#5\secd@unique
+    %% If the dump is empty, emit an error.
+    \secd@Error{dump underflow}%
+  \else
+    \secd@HandleRETURN@i{#2}{#3}{#4}#5\secd@End
+  \fi
+}
+\def\secd@HandleRETURN@i#1#2#3\secd@CLOS#4#5#6\secd@End{%
+  %% #1 : subsequent code (that will be discarded)
+  %% #2 : stack (that should implicitly be non-empty)
+  %% #3 : environment (that will be discarded)
+  %% \secd@CLOS#4#5 : closure (#4 : code, #5 : environment)
+  %% #6 : rest of the dump
+  \secd@Run{%
+  %% next stack:
+    #2%
+  }{%
+  %% next environment:
+    #5%
+  }{%
+  %% next code:
+    #4%
+  }{%
+  %% next dump:
+    #6%
+  }%
+}
