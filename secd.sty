@@ -4,8 +4,14 @@
 %% - Natural numbers used as indices are represented by (possibly empty) lists of `*`
 %%   (see `\secd@AccessNonZeroIndex`).
 %% - Values are treated in the form `\secd@XXX … \secd@ENDVAL`.
+%%   * Closures are represented by `\secd@CLOS{〈C〉}{〈E〉}\secd@ENDVAL`
+%%     where `〈C〉` is the code that forms the body of the closure,
+%%     and `〈E〉` is the environment that will be used for evaluating `〈C〉`.
+%%   * Natural numbers are represented by `\secd@INT{…}\secd@ENDVAL` where `…` is a sequence of `o`.
+%%   * Strings are represented by `\secd@STRING{…}\secd@ENDVAL` where `…` is an ordinary sequence of characters.
 %% - Either a stack or an environment is a list made up simply by concatenating values.
-%% - A dump is of the form `\secd@DUMP C_1 E_1 … \secd@DUMP C_n E_n`.
+%% - A dump is of the form `\secd@DUMP{〈C_1〉}{〈E_1〉} … \secd@DUMP{〈C_n〉}{〈E_n〉}`
+%%   where each `〈C_i〉` is saved code and each `〈E_i〉` is a saved environment.
 
 \def\secd@unique{\secd@unique@dummy}
 \def\secd@Then#1\else#2\fi{\else\fi#1}
@@ -38,7 +44,7 @@
   %% #4 : dump
   \ifx\secd@unique#3\secd@unique\secd@Then
     %% If code is empty, return the stack
-    #1%
+    \secd@Finish#1\secd@End
   \else
     %% Dummy message:
     %\expandafter\message\expandafter{\expandafter\string\secd@Car#3\secd@End}%
@@ -46,24 +52,35 @@
     #3\secd@End{#1}{#2}{#4}%
   \fi
 }
+\def\secd@Finish#1\secd@ENDVAL#2\secd@End{%
+  \ifx\secd@unique#2\secd@unique\secd@Then
+    \secd@Error{not an empty stack}%
+  \else\secd@Hop
+    #1\secd@ENDVAL
+  \fi
+}
 \def\secd@HandleACCESS#1#2\secd@End#3#4#5{%
   %% Handle ACCESS instruction and run the next configuration.
-  %% #1 : index for the access
-  %% #2 : subsequent code
-  %% #3 : stack
-  %% #4 : environment
-  %% #5 : dump
+  %%
+  %%   (S, E, (ACCESS i) :: C, D) ---> (V :: S, E, C, D)
+  %%     where V is the i-th element of E (indices are zero-origin)
+  %%
+  %% #1 = i : index for the access
+  %% #2 = C : subsequent code
+  %% #3 = S : stack
+  %% #4 = E : environment
+  %% #5 = D : dump
   \expandafter\secd@Run\expandafter{%
-  %% next stack:
+  %% next stack = (V :: S)
     \romannumeral-`0\secd@AccessIndex{#1}{#4}#3%
   }{%
-  %% next environment:
+  %% next environment = E
     #4%
   }{%
-  %% next code:
+  %% next code = C
     #2%
   }{%
-  %% next dump:
+  %% next dump = D
     #5%
   }%
 }
@@ -100,32 +117,39 @@
 }
 \def\secd@HandleCLOSURE#1#2\secd@End#3#4#5{%
   %% Handle CLOSURE instruction and run the next configuration.
-  %% #1 : code contained in the closure
-  %% #2 : subsequent code
-  %% #3 : stack
-  %% #4 : environment
-  %% #5 : dump
+  %%
+  %%   (S, E, (CLOSURE C') :: C, D) ---> ((CLOS C' E) :: S, E, C, D)
+  %%
+  %% #1 = C' : code contained in the closure
+  %% #2 = C  : subsequent code
+  %% #3 = S  : stack
+  %% #4 = E  : environment
+  %% #5 = D  : dump
   \secd@Run{%
-  %% next stack:
+  %% next stack = ((CLOS C' E) :: S)
     \secd@CLOS{#1}{#4}\secd@ENDVAL#3%
   }{%
-  %% next environment:
+  %% next environment = E
     #4%
   }{%
-  %% next code:
+  %% next code = C
     #2%
   }{%
-  %% next dump:
+  %% next dump = D
     #5%
   }%
 }
 \def\secd@HandleAPPLY#1#2\secd@End#3#4#5{%
   %% Handle APPLY instruction and run the next configuration.
-  %% #1 : dummy argument
-  %% #2 : subsequent code
-  %% #3 : stack
-  %% #4 : environment
-  %% #5 : dump
+  %%
+  %%   (S', E, APPLY :: C, D) ---> (S, V :: E', C', (DUMP C E) :: D)
+  %%     where S' is of the form (V :: (CLOS C' E') :: S)
+  %%
+  %% #1      : dummy argument
+  %% #2 = C  : subsequent code
+  %% #3 = S' : stack
+  %% #4 = E  : environment
+  %% #5 = D  : dump
   \ifx\secd@unique#3\secd@unique\secd@Then
     \secd@Error{stack underflow (1)}%
   \else\secd@Hop
@@ -133,11 +157,11 @@
   \fi
 }
 \def\secd@HandleAPPLY@i#1\secd@ENDVAL#2\secd@End#3#4#5{%
-  %% #1\secd@ENDVAL : the first element of the stack
-  %% #2             : the subsequent elements of the stack
-  %% #3             : susequent code
-  %% #4             : environment
-  %% #5             : dump
+  %% #1\secd@ENDVAL = V                   : the first element of the stack
+  %% #2             = ((CLOS C' E') :: S) : the subsequent elements of the stack
+  %% #3             = C                   : susequent code
+  %% #4             = E                   : environment
+  %% #5             = D                   : dump
   \ifx\secd@unique#2\secd@unique\secd@Then
     \secd@Error{stack underflow (2)}%
   \else\secd@Hop
@@ -145,32 +169,37 @@
   \fi
 }
 \def\secd@HandleAPPLY@ii\secd@CLOS#1#2\secd@ENDVAL#3\secd@End#4#5#6#7{%
-  %% \secd@CLOS#1#2\secd@ENDVAL : the second element of the stack (#1 : code, #2 : environment)
-  %% #3             : the subsequent elements of the stack
-  %% #4             : the first element of the stack (that includes `\secd@ENDVAL`)
-  %% #5             : subsequent code
-  %% #6             : environment
-  %% #7             : dump
+  %% \secd@CLOS#1#2\secd@ENDVAL = (CLOS C' E') : the second element of the stack (#1 : code, #2 : environment)
+  %% #3                         = S            : the subsequent elements of the stack
+  %% #4                         = V            : the first element of the stack (that includes `\secd@ENDVAL`)
+  %% #5                         = C            : subsequent code
+  %% #6                         = E            : environment
+  %% #7                         = D            : dump
   \secd@Run{%
-  %% next stack:
-    #2%
+  %% next stack = S
+    #3%
   }{%
-  %% next environment:
+  %% next environment = (V :: E')
     #4#2%
   }{%
-  %% next code:
+  %% next code = C'
     #1%
   }{%
+  %% next dump = ((DUMP C E) :: D)
     \secd@DUMP{#5}{#6}#7%
   }%
 }
 \def\secd@HandleRETURN#1#2\secd@End#3#4#5{%
   %% Handle RETURN instruction and run the next configuration.
-  %% #1 : dummy argument
-  %% #2 : subsequent code
-  %% #3 : stack
-  %% #4 : environment
-  %% #5 : dump
+  %%
+  %%   (S, E, RETURN :: C, D') ---> (S, E', C', D)
+  %%     where D' is of the form ((DUMP C' E') :: D)
+  %%
+  %% #1      : dummy argument
+  %% #2 = C  : subsequent code
+  %% #3 = S  : stack
+  %% #4 = E  : environment
+  %% #5 = D' : dump
   \ifx\secd@unique#5\secd@unique\secd@Then
     %% If the dump is empty, emit an error.
     \secd@Error{dump underflow}%
@@ -179,64 +208,72 @@
   \fi
 }
 \def\secd@HandleRETURN@i#1#2#3\secd@DUMP#4#5#6\secd@End{%
-  %% #1             : subsequent code (that will be discarded)
-  %% #2             : stack (that should implicitly be non-empty)
-  %% #3             : environment (that will be discarded)
-  %% \secd@DUMP#4#5 : dumped entry (#4 : code, #5 : environment)
-  %% #6             : subsequent element of the dump
+  %% #1             = C            : subsequent code (that will be discarded)
+  %% #2             = S            : stack (that should implicitly be non-empty)
+  %% #3             = E            : environment (that will be discarded)
+  %% \secd@DUMP#4#5 = (DUMP C' E') : dumped entry (#4 : code, #5 : environment)
+  %% #6             = D            : subsequent element of the dump
   \secd@Run{%
-  %% next stack:
+  %% next stack = S
     #2%
   }{%
-  %% next environment:
+  %% next environment = E'
     #5%
   }{%
-  %% next code:
+  %% next code = C
     #4%
   }{%
-  %% next dump:
+  %% next dump = D
     #6%
   }%
 }
 \def\secd@HandleCONST#1#2\secd@End#3#4#5{%
   %% Handle CONST instruction and run the next configuration.
-  %% #1 : constant value (that includes `\secd@ENDVAL`)
-  %% #2 : subsequent code
-  %% #3 : stack
-  %% #4 : environment
-  %% #5 : dump
+  %%
+  %%   (S, E, (CONST c) :: C, D) ---> (c :: S, E, C, D)
+  %%
+  %% #1 = c : constant value (that includes `\secd@ENDVAL`)
+  %% #2 = C : subsequent code
+  %% #3 = S : stack
+  %% #4 = E : environment
+  %% #5 = D : dump
   \secd@Run{%
-  %% next stack:
+  %% next stack = (c :: S)
     #1#3%
   }{%
-  %% next environment:
+  %% next environment = E
     #4%
   }{%
-  %% next code:
+  %% next code = C
     #2%
   }{%
-  %% next dump:
+  %% next dump = D
     #5%
   }%
 }
 \def\secd@HandlePRIM#1#2\secd@End#3#4#5{%
   %% Handle PRIM instruction and run the next configuration.
-  %% #1 : primitive command
-  %% #2 : subsequent code
-  %% #3 : stack
-  %% #4 : environment
-  %% #5 : dump
+  %%
+  %%   (S', E, (PRIM p) :: C, D) ---> (V :: S, E, C, D)
+  %%     where S' is of the form (V_n :: … :: V_1 :: S),
+  %%     n is the arity of p and V is the result of p(V_1, …, V_n)
+  %%
+  %% #1 = p  : primitive command
+  %% #2 = C  : subsequent code
+  %% #3 = S' : stack
+  %% #4 = E  : environment
+  %% #5 = D  : dump
   \expandafter\secd@Run\expandafter{%
-  %% next stack:
+  %% next stack = (V :: S)
     \romannumeral-`0#1#3\secd@End
   }{%
-  %% next environment:
+  %% next environment = E
     #4%
   }{%
-  %% next code:
+  %% next code = C
     #2%
   }{%
-  %% next dump:
+  %% next dump = D
     #5%
   }%
 }
@@ -285,7 +322,46 @@
 \def\secd@PrimitiveIntAdd@ii#1\secd@INT#2\secd@ENDVAL#3\secd@End{%
   %% \secd@INT#1\secd@ENDVAL : the first element of the stack (i.e. the second argument)
   %% \secd@INT#2\secd@ENDVAL : the second element of the stack (i.e. the first argument)
-  \secd@INT{#1#2}\secd@ENDVAL
+  \secd@INT{#1#2}\secd@ENDVAL#3%
+}
+
+%% == Integer subtraction ==
+\def\secd@PrimitiveIntSub#1\secd@End{%
+  %% #1 : stack that should have at least two elements
+  \secd@PrimitiveIntSub@i#1\secd@End
+}
+\def\secd@PrimitiveIntSub@i\secd@INT#1\secd@ENDVAL#2\secd@End{%
+  %% \secd@INT#1\secd@ENDVAL : the first element of the stack (i.e. the second argument)
+  %% #2                      : the rest of the stack
+  \secd@PrimitiveIntSub@ii{#1}#2\secd@End
+}
+\def\secd@PrimitiveIntSub@ii#1\secd@INT#2\secd@ENDVAL#3\secd@End{%
+  %% \secd@INT#1\secd@ENDVAL : the first element of the stack (i.e. the second argument)
+  %% \secd@INT#2\secd@ENDVAL : the second element of the stack (i.e. the first argument)
+  \secd@PrimitiveIntSub@Iter{#2}{#1}#3%
+}
+\def\secd@PrimitiveIntSub@Iter#1#2{%
+  %% #1 : the subtracted number
+  %% #2 : the number to subtract
+  \ifx\secd@unique#1\secd@unique\secd@Then
+    \secd@INT{}\secd@ENDVAL
+  \else\secd@Hop
+    \secd@PrimitiveIntSub@Iter@i#1\secd@End{#2}%
+  \fi
+}
+\def\secd@PrimitiveIntSub@Iter@i o#1\secd@End#2{%
+  %% #1 : (the subtracted number) - 1
+  %% #2 : the number to subtract
+  \ifx\secd@unique#2\secd@unique\secd@Then
+    \secd@INT{o#1}\secd@ENDVAL
+  \else\secd@Hop
+    \secd@PrimitiveIntSub@Iter@ii{#1}#2\secd@End
+  \fi
+}
+\def\secd@PrimitiveIntSub@Iter@ii#1o#2\secd@End{%
+  %% #1 : (the subtracted number) - 1
+  %% #2 : (the number to subtract) - 1
+  \secd@PrimitiveIntSub@Iter{#1}{#2}%
 }
 
 %% == Integer display ==
