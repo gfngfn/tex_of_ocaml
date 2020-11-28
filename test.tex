@@ -1,11 +1,14 @@
 \documentclass{jsarticle}
 \usepackage{secd}
 \begin{document}
+  %\tracingmacros=1\relax
   \makeatletter
   \secd@Run{}{}{%
-    \secd@CONST{%
-      \secd@STRING{a}%
-    }%
-  }%
+    \secd@CONST{\secd@STRING{foo}}%
+    \secd@CONST{\secd@STRING{bar}}%
+    \secd@PRIM{\secd@PrimitiveStringConcat}%
+    \secd@CONST{\secd@STRING{baz}}%
+    \secd@PRIM{\secd@PrimitiveStringConcat}%
+  }{}%
   \makeatother
 \end{document}
