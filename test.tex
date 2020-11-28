@@ -11,7 +11,7 @@
 %%   [ CLOSURE [ CONST "foo"; CONST "bar"; PRIM ^; ACCESS V0; PRIM ^; RETURN ];
 %%     CONST "baz"; APPLY ]
 %%   ```
-\edef\resultA{%
+\edef\resultAi{%
   \secd@EvalAndShowString{%
     \secd@Run{}{}{%
       \secd@CLOSURE{%
@@ -39,7 +39,7 @@
 %%     CONST "baz"; APPLY;
 %%     CONST "foo"; APPLY ]
 %%   ```
-\edef\resultAA{%
+\edef\resultAii{%
   \secd@EvalAndShowString{%
     \secd@Run{}{}{%
       \secd@CLOSURE{%
@@ -68,7 +68,7 @@
 %%     CONST 9;
 %%     PRIM + ]
 %%   ```
-\edef\resultB{%
+\edef\resultBi{%
   \secd@EvalAndShowInt{%
     \secd@Run{}{}{%
       \secd@CONST{\secd@INT{oooooooooooooo}\secd@ENDVAL}%
@@ -85,7 +85,7 @@
 %%     CONST 9;
 %%     PRIM - ]
 %%   ```
-\edef\resultC{%
+\edef\resultBii{%
   \secd@EvalAndShowInt{%
     \secd@Run{}{}{%
       \secd@CONST{\secd@INT{oooooooooooooo}\secd@ENDVAL}%
@@ -94,8 +94,26 @@
     }{}%
   }%
 }
+%% Evaluate `(14 * 3)`
+%%
+%%   SECD code:
+%%   ```
+%%   [ CONST 14;
+%%     CONST 3;
+%%     PRIM * ]
+%%   ```
+\edef\resultBiii{%
+  \secd@EvalAndShowInt{%
+    \secd@Run{}{}{%
+      \secd@CONST{\secd@INT{oooooooooooooo}\secd@ENDVAL}%
+      \secd@CONST{\secd@INT{ooo}\secd@ENDVAL}%
+      \secd@PRIM{\secd@PrimitiveIntMult}%
+    }{}%
+  }%
+}
 \tracingmacros=0\relax
 \makeatother
 \begin{document}
-  \resultA, \resultAA, \resultB, \resultC
+  \resultAi, \resultAii,
+  \resultBi, \resultBii, \resultBiii
 \end{document}
