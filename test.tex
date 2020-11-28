@@ -3,6 +3,14 @@
 \makeatletter
 \tracingmacros=1\relax
 %% Evaluate `(fun x -> "foo" ^ "bar" ^ x) "baz"`.
+%%
+%%   de Bruijn representation: `(fun -> "foo" ^ "bar" ^ V0) "baz"`
+%%
+%%   SECD code:
+%%   ```
+%%   [ CLOSURE [ CONST "foo"; CONST "bar"; PRIM ^; ACCESS V0; PRIM ^; RETURN ];
+%%     CONST "baz"; APPLY ]
+%%   ```
 \edef\resultA{%
   \secd@EvalAndShowString{%
     \secd@Run{}{}{%
@@ -20,6 +28,17 @@
   }%
 }
 %% Evaluate `(fun x -> (fun y -> y ^ "bar" ^ x)) "baz" "foo"`
+%%
+%%   de Bruijn representation: `(fun -> (fun -> V0 ^ "bar" ^ V1)) "baz" "foo"`
+%%
+%%   SECD code:
+%%   ```
+%%   [ CLOSURE [
+%%       CLOSURE [ ACCESS V0; CONST "bar"; PRIM ^; ACCESS V1; PRIM ^; RETURN ];
+%%       RETURN ];
+%%     CONST "baz"; APPLY;
+%%     CONST "foo"; APPLY ]
+%%   ```
 \edef\resultAA{%
   \secd@EvalAndShowString{%
     \secd@Run{}{}{%
@@ -42,6 +61,13 @@
   }%
 }
 %% Evaluate `(14 + 9)`
+%%
+%%   SECD code:
+%%   ```
+%%   [ CONST 14;
+%%     CONST 9;
+%%     PRIM + ]
+%%   ```
 \edef\resultB{%
   \secd@EvalAndShowInt{%
     \secd@Run{}{}{%
@@ -52,6 +78,13 @@
   }%
 }
 %% Evaluate `(14 - 9)`
+%%
+%%   SECD code:
+%%   ```
+%%   [ CONST 14;
+%%     CONST 9;
+%%     PRIM - ]
+%%   ```
 \edef\resultC{%
   \secd@EvalAndShowInt{%
     \secd@Run{}{}{%
