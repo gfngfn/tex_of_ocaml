@@ -18,10 +18,13 @@
     }{}%
   }%
 }
+%% Evaluate `(14 + 9)`
 \edef\resultB{%
   \secd@EvalAndShowInt{%
     \secd@Run{}{}{%
-      \secd@CONST{\secd@INT{oooo}\secd@ENDVAL}%
+      \secd@CONST{\secd@INT{oooooooooooooo}\secd@ENDVAL}%
+      \secd@CONST{\secd@INT{ooooooooo}\secd@ENDVAL}%
+      \secd@PRIM{\secd@PrimitiveIntAdd}%
     }{}%
   }%
 }
