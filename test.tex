@@ -3,7 +3,7 @@
 \makeatletter
 \tracingmacros=1\relax
 %% Evaluate `(fun x -> "foo" ^ "bar" ^ x) "baz"`
-\edef\result{%
+\edef\resultA{%
   \secd@EvalAndShowString{%
     \secd@Run{}{}{%
       \secd@CLOSURE{%
@@ -18,8 +18,15 @@
     }{}%
   }%
 }
+\edef\resultB{%
+  \secd@EvalAndShowInt{%
+    \secd@Run{}{}{%
+      \secd@CONST{\secd@INT{oooo}\secd@ENDVAL}%
+    }{}%
+  }%
+}
 \tracingmacros=0\relax
 \makeatother
 \begin{document}
-  \result
+  \resultA, \resultB
 \end{document}

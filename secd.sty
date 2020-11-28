@@ -9,6 +9,7 @@
 
 \def\secd@unique{\secd@unique@dummy}
 \def\secd@Then#1\else#2\fi{\else\fi#1}
+\def\secd@HopOr#1\or#2\fi{\or\fi#1}
 \def\secd@Hop#1\fi{\fi#1}
 
 \def\secd@Error#1{Error: #1}
@@ -27,6 +28,7 @@
 \let\secd@CLOS\relax
 \let\secd@ERROR\relax
 \let\secd@STRING\relax
+\let\secd@INT\relax
 
 %% == Interpreter ==
 \def\secd@Run#1#2#3#4{%
@@ -238,6 +240,8 @@
     #5%
   }%
 }
+
+%% == String concatenation ==
 \def\secd@PrimitiveStringConcat#1\secd@End{%
   %% #1 : stack that should have at least two elements
 %  \ifx\secd@unique#1\secd@unique
@@ -261,7 +265,87 @@
   %% #3                         : the rest of the stack
   \secd@STRING{#2#1}\secd@ENDVAL#3%
 }
+
+%% == String display ==
 \def\secd@EvalAndShowString#1{%
   \expandafter\secd@ShowString\romannumeral-`0#1%
 }
 \def\secd@ShowString\secd@STRING#1\secd@ENDVAL{#1}
+
+%% == Integer addition ==
+\def\secd@PrimitiveIntAdd#1\secd@End{%
+  %% #1 : stack that should have at least two elements
+  \secd@PrimitiveIntAdd@i#1\secd@End
+}
+\def\secd@PrimitiveIntAdd@i\secd@INT#1\secd@ENDVAL#2\secd@End{%
+  %% \secd@INT#1\secd@ENDVAL : the first element of the stack (i.e. the second argument)
+  %% #2                      : the rest of the stack
+  \secd@PrimitiveIntAdd@ii{#1}#2\secd@End
+}
+\def\secd@PrimitiveIntAdd@ii#1\secd@INT#2\secd@ENDVAL#3\secd@End{%
+  %% \secd@INT#1\secd@ENDVAL : the first element of the stack (i.e. the second argument)
+  %% \secd@INT#2\secd@ENDVAL : the second element of the stack (i.e. the first argument)
+  \secd@INT{#1#2}\secd@ENDVAL
+}
+
+%% == Integer display ==
+\def\secd@EvalAndShowInt#1{%
+  \expandafter\secd@ShowInt\romannumeral-`0#1%
+}
+\def\secd@ShowInt\secd@INT#1\secd@ENDVAL{%
+  %% #1 : a natural number represented by a sequence of `o`
+  \secd@ShowInt@Iter{}{}{0}{#1}%
+}
+\def\secd@ShowInt@Iter#1#2#3#4{%
+  %% #1 : an accumulator of resulting digits
+  %% #2 : an accumulator for the next (10^n)s
+  %% #3 : a counter represented by a digit
+  %% #4 : a natural number represented by a sequence of `o`
+  \ifx\secd@unique#4\secd@unique\secd@Then
+    %% If reached the end, shift to the next (10^n)s place or finish.
+    \secd@ShowInt@ShiftOrEnd{#1}{#2}{#3}%
+  \else\secd@Hop
+    %% Otherwise, increment the counter.
+    \secd@ShowInt@IncrementDigit{#1}{#2}{#3}#4\secd@End
+  \fi
+}
+\def\secd@ShowInt@ShiftOrEnd#1#2#3{%
+  %% #1 : an accumulator for digits
+  %% #2 : an accumulator for the next 10s
+  %% #3 : a counter represented by a digit
+  \ifx\secd@unique#2\secd@unique\secd@Then
+    %% If the next (10^n)s place is not needed, return the result.
+    #3#1%
+  \else\secd@Hop
+    %% Otherwise, shift the (10^n)s place.
+    \secd@ShowInt@Iter{#3#1}{}{0}{#2}%
+  \fi
+}
+\def\secd@ShowInt@IncrementDigit#1#2#3o#4\secd@End{%
+  %% #1 : an accumulator of resulting digits
+  %% #2 : an accumulator for the next (10^n)s
+  %% #3 : a counter represented by a digit
+  %% #4 : a decremented natural number represented by a sequence of `o`
+  \ifcase#3 \secd@HopOr
+    \secd@ShowInt@Iter{#1}{#2}{1}{#4}%
+  \or\secd@HopOr
+    \secd@ShowInt@Iter{#1}{#2}{2}{#4}%
+  \or\secd@HopOr
+    \secd@ShowInt@Iter{#1}{#2}{3}{#4}%
+  \or\secd@HopOr
+    \secd@ShowInt@Iter{#1}{#2}{4}{#4}%
+  \or\secd@HopOr
+    \secd@ShowInt@Iter{#1}{#2}{5}{#4}%
+  \or\secd@HopOr
+    \secd@ShowInt@Iter{#1}{#2}{6}{#4}%
+  \or\secd@HopOr
+    \secd@ShowInt@Iter{#1}{#2}{7}{#4}%
+  \or\secd@HopOr
+    \secd@ShowInt@Iter{#1}{#2}{8}{#4}%
+  \or\secd@HopOr
+    \secd@ShowInt@Iter{#1}{#2}{9}{#4}%
+  \or\secd@Hop
+    %% If the current counter is 9, set the carry digit.
+    \secd@ShowInt@Iter{#1}{o#2}{0}{#4}%
+  \fi
+}
