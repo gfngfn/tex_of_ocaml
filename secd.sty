@@ -3,7 +3,9 @@
 %% - The interpreter is implemented based on the SECD Machine.
 %% - Natural numbers used as indices are represented by (possibly empty) lists of `*`
 %%   (see `\secd@AccessNonZeroIndex`).
-
+%% - Values are treated in the form `\secd@XXX … \secd@ENDVAL`.
+%% - Either a stack or an environment is a list made up simply by concatenating values.
+%% - A dump is of the form `\secd@DUMP C_1 E_1 … \secd@DUMP C_n E_n`.
 
 \def\secd@unique{\secd@unique@dummy}
 \def\secd@Then#1\else#2\fi{\else\fi#1}
