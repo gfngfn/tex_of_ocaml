@@ -8,6 +8,7 @@ mod parser;
 mod error;
 
 use syntax::Expr;
+use error::Error;
 
 #[derive(Clap, Debug)]
 #[clap(
@@ -40,10 +41,10 @@ fn display(opts: &Opts) {
     println!("Hello, world! (input: {:?}, output: {:?})", input, output);
 }
 
-fn run(opts: Opts) -> Result<(), error::Error> {
+fn run(opts: Opts) -> Result<(), Error> {
     let input_path: &String = &opts.input;
-    let s: String = fs::read_to_string(input_path).map_err(error::of_io_error)?;
-    let e: Expr = parser::parse(&s).map_err(error::of_parse_error)?;
+    let s: String = fs::read_to_string(input_path).map_err(Error::of_io_error)?;
+    let e: Expr = parser::parse(&s).map_err(Error::of_parse_error)?;
     println!("Content: {:?}", e);
     Ok(())
 }

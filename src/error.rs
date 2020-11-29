@@ -7,10 +7,12 @@ pub enum Error {
     ParseError(parser::Error)
 }
 
-pub fn of_io_error(e: std::io::Error) -> Error {
-    Error::IoError(e)
-}
+impl Error {
+    pub fn of_io_error(e: std::io::Error) -> Self {
+        Error::IoError(e)
+    }
 
-pub fn of_parse_error(e: parser::Error) -> Error {
-    Error::ParseError(e)
+    pub fn of_parse_error(e: parser::Error) -> Self {
+        Error::ParseError(e)
+    }
 }

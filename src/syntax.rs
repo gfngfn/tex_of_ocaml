@@ -2,8 +2,10 @@
 #[derive(Debug)]
 pub struct Ident(String);
 
-pub fn ident_of_string(s: String) -> Ident {
-    Ident(s)
+impl Ident {
+    pub fn of_string(s: String) -> Self {
+        Ident(s)
+    }
 }
 
 #[derive(Debug)]
