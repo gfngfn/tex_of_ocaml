@@ -1,4 +1,6 @@
 /* use std::path::PathBuf; */
+use std::fs;
+/* use std::io::{BufRead, BufReader}; */
 use clap::Clap;
 
 #[derive(Clap, Debug)]
@@ -11,7 +13,7 @@ use clap::Clap;
 struct Opts {
 /*    #[clap(name = "INPUT", parse(from_os_str))] */
     #[clap(name = "INPUT")]
-    input: Option<String>,
+    input: String,
 
     #[clap(short, long)]
     output: Option<String>,
@@ -19,25 +21,21 @@ struct Opts {
 
 fn main() {
     let opts = Opts::parse();
-/*
-    let matches =
-        App::new("tex_of_ocaml")
-            .version("0.1.0")
-            .arg(
-                Arg::with_name("input")
-                    .index(1)
-                    .required(false)
-            )
-            .arg(
-                Arg::with_name("output")
-                    .long("output")
-                    .short("o")
-                    .takes_value(true)
-                    .required(false)
-            )
-            .get_matches();
-*/
-    let input = opts.input.unwrap_or("(no input)".to_string());
-    let output = opts.output.unwrap_or("(no output)".to_string());
-    println!("Hello, world! (input: {}, output: {})", input, output);
+    display(&opts);
+    run(opts);
+}
+
+fn display(opts: &Opts) {
+    let input = &opts.input;
+    let output = opts.output.as_ref();
+    println!("Hello, world! (input: {:?}, output: {:?})", input, output);
+}
+
+fn run(opts: Opts) {
+    let input_path: &String = &opts.input;
+    let res = fs::read_to_string(input_path);
+    match res {
+        Ok(s)  => println!("Content: {}", s),
+        Err(e) => println!("Error: {}", e),
+    }
 }
