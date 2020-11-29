@@ -3,6 +3,12 @@ use std::fs;
 /* use std::io::{BufRead, BufReader}; */
 use clap::Clap;
 
+mod syntax;
+mod parser;
+mod error;
+
+use syntax::Expr;
+
 #[derive(Clap, Debug)]
 #[clap(
     name = "tex_of_ocaml",
@@ -22,20 +28,22 @@ struct Opts {
 fn main() {
     let opts = Opts::parse();
     display(&opts);
-    run(opts);
+    let res = run(opts);
+    if let Err(e) = res {
+        println!("Error: {:?}", e);
+    }
 }
 
 fn display(opts: &Opts) {
-    let input = &opts.input;
-    let output = opts.output.as_ref();
+    let input: &String = &opts.input;
+    let output: Option<&String> = opts.output.as_ref();
     println!("Hello, world! (input: {:?}, output: {:?})", input, output);
 }
 
-fn run(opts: Opts) {
+fn run(opts: Opts) -> Result<(), error::Error> {
     let input_path: &String = &opts.input;
-    let res = fs::read_to_string(input_path);
-    match res {
-        Ok(s)  => println!("Content: {}", s),
-        Err(e) => println!("Error: {}", e),
-    }
+    let s: String = fs::read_to_string(input_path).map_err(error::of_io_error)?;
+    let e: Expr = parser::parse(&s).map_err(error::of_parse_error)?;
+    println!("Content: {:?}", e);
+    Ok(())
 }
