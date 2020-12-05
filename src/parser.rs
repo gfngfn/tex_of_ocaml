@@ -1,7 +1,7 @@
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_while, take_while1},
-    combinator::{map, opt},
+    combinator::{map, opt, verify},
     sequence::tuple,
     IResult,
 };
@@ -62,6 +62,13 @@ fn skip_space(s: &Input) -> IResult<&Input, ()> {
     Ok((s, ()))
 }
 
+fn is_not_reserved(word: &str) -> bool {
+    match word {
+        "fun" => false,
+        _ => true,
+    }
+}
+
 fn parse_main(s: &Input) -> IResult<&Input, Expr> {
     alt((parse_abstraction, parse_application))(s)
 }
@@ -79,12 +86,8 @@ fn parse_abstraction(s: &Input) -> IResult<&Input, Expr> {
 
 fn parse_application(s: &Input) -> IResult<&Input, Expr> {
     let (s, (e, eargs)) = parse_single_list(s)?;
-    if eargs.len() == 0usize {
-        Ok((s, e))
-    } else {
-        let eret: Expr = eargs.foldl(|eapp, earg| Expr::Apply(Box::new(eapp), Box::new(earg)), e);
-        Ok((s, eret))
-    }
+    let eret: Expr = eargs.foldl(|eapp, earg| Expr::Apply(Box::new(eapp), Box::new(earg)), e);
+    Ok((s, eret))
 }
 
 fn parse_single_list<'a>(s: &'a Input) -> IResult<&'a Input, (Expr, List<Expr>)> {
@@ -107,7 +110,7 @@ fn parse_variable(s: &Input) -> IResult<&Input, Expr> {
 }
 
 fn parse_ident(s: &Input) -> IResult<&Input, Ident> {
-    let (s, alphas) = take_while1(char::is_alphabetic)(s)?;
+    let (s, alphas) = verify(take_while1(char::is_alphabetic), is_not_reserved)(s)?;
     Ok((s, Ident::of_string(alphas.to_string())))
 }
 
