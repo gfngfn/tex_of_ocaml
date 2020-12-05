@@ -1,4 +1,6 @@
-#[derive(Debug)]
+use crate::list::List;
+
+#[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub struct Ident(String);
 
 impl Ident {
@@ -12,4 +14,12 @@ pub enum Expr {
     Var(Ident),
     Lambda(Ident, Box<Expr>),
     Apply(Box<Expr>, Box<Expr>),
+}
+
+#[derive(Debug)]
+pub enum Instruction {
+    Access(i32),
+    Closure(Box<List<Instruction>>),
+    Return,
+    Apply,
 }

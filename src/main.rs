@@ -1,6 +1,7 @@
 use clap::Clap;
 use std::fs;
 
+mod compiler;
 mod error;
 mod list;
 mod parser;
@@ -43,7 +44,15 @@ fn run(opts: Opts) {
         Ok(s) => {
             let input = &s;
             match parser::parse(input).map_err(Error::of_parse_error) {
-                Ok(e) => println!("Content: {:?}", e),
+                Ok(e) => {
+                    println!("Expression: {:?}", e);
+                    match compiler::compile(e) {
+                        Ok(instrs) => {
+                            println!("Instruction: {:?}", instrs);
+                        }
+                        Err(err) => println!("Error: {:?}", err),
+                    }
+                }
                 Err(err) => println!("Error: {:?}", err),
             }
         }
