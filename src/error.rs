@@ -6,12 +6,12 @@ pub enum Error<'a> {
     ParseError(parser::Error<'a>),
 }
 
-impl Error<'static> {
+impl<'a> Error<'a> {
     pub fn of_io_error(e: std::io::Error) -> Self {
         Error::IoError(e)
     }
 
-    pub fn of_parse_error(e: parser::Error<'static>) -> Self {
+    pub fn of_parse_error(e: parser::Error<'a>) -> Self {
         Error::ParseError(e)
     }
 }

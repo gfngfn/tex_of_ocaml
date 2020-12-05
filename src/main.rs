@@ -6,7 +6,6 @@ mod parser;
 mod syntax;
 
 use error::Error;
-use syntax::Expr;
 
 #[derive(Clap, Debug)]
 #[clap(
@@ -26,10 +25,7 @@ struct Opts {
 fn main() {
     let opts = Opts::parse();
     display(&opts);
-    let res = run(opts);
-    if let Err(e) = res {
-        println!("Error: {:?}", e);
-    }
+    run(opts);
 }
 
 fn display(opts: &Opts) {
@@ -38,10 +34,17 @@ fn display(opts: &Opts) {
     println!("Hello, world! (input: {:?}, output: {:?})", input, output);
 }
 
-fn run(opts: Opts) -> Result<(), Error<'static>> {
+fn run(opts: Opts) {
     let input_path: &String = &opts.input;
-    let s: String = fs::read_to_string(input_path).map_err(Error::of_io_error)?;
-    let e: Expr = parser::parse(&s).map_err(Error::of_parse_error)?;
-    println!("Content: {:?}", e);
-    Ok(())
+    match fs::read_to_string(input_path).map_err(Error::of_io_error) {
+        Err(err) => println!("Error: {:?}", err),
+
+        Ok(s) => {
+            let input = &s;
+            match parser::parse(input).map_err(Error::of_parse_error) {
+                Ok(e) => println!("Content: {:?}", e),
+                Err(err) => println!("Error: {:?}", err),
+            }
+        }
+    }
 }
