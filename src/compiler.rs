@@ -25,10 +25,10 @@ fn iter(lev: Level, levmap: &LevelMap, e: Expr) -> Result<List<Instruction>, Err
 
         Expr::Lambda(x, e0) => {
             let instrs0 = iter(lev + 1, &levmap.update(x, lev + 1), *e0)?;
-            Ok(List::Cons(
-                Instruction::Closure(Box::new(instrs0)),
-                Box::new(List::singleton(Instruction::Return)),
-            ))
+            Ok(List::singleton(Instruction::Closure(Box::new(append(
+                instrs0,
+                List::singleton(Instruction::Return),
+            )))))
         }
 
         Expr::Apply(e1, e2) => {
