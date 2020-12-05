@@ -1,24 +1,21 @@
-/* use std::path::PathBuf; */
-use std::fs;
-/* use std::io::{BufRead, BufReader}; */
 use clap::Clap;
+use std::fs;
 
-mod syntax;
-mod parser;
 mod error;
+mod parser;
+mod syntax;
 
-use syntax::Expr;
 use error::Error;
+use syntax::Expr;
 
 #[derive(Clap, Debug)]
 #[clap(
     name = "tex_of_ocaml",
     version = "0.1.0",
     author = "Takashi SUWA",
-    about = "A compiler from lambda terms into TeX sources",
+    about = "A compiler from lambda terms into TeX sources"
 )]
 struct Opts {
-/*    #[clap(name = "INPUT", parse(from_os_str))] */
     #[clap(name = "INPUT")]
     input: String,
 
@@ -41,7 +38,7 @@ fn display(opts: &Opts) {
     println!("Hello, world! (input: {:?}, output: {:?})", input, output);
 }
 
-fn run(opts: Opts) -> Result<(), Error> {
+fn run(opts: Opts) -> Result<(), Error<'static>> {
     let input_path: &String = &opts.input;
     let s: String = fs::read_to_string(input_path).map_err(Error::of_io_error)?;
     let e: Expr = parser::parse(&s).map_err(Error::of_parse_error)?;
