@@ -2,6 +2,7 @@ use nom::{
     branch::alt,
     bytes::complete::{tag, take_while, take_while1},
     combinator::{map, opt, verify},
+    error::{make_error, ErrorKind},
     sequence::tuple,
     IResult,
 };
@@ -10,29 +11,19 @@ use std::char;
 use crate::list::List;
 use crate::syntax::{Expr, Ident};
 
-/*
-impl<T> Iterator for List<T> {
-    type Item = T;
-
-    fn next(&mut self) -> Option<T> {
-        match self {
-            List::Nil => None,
-            List::Cons(x, tail) => {
-                *self = tail;
-                Some(x)
-            }
-        }
-    }
-}
-*/
-
 type Input = str;
 
 pub type Error<'a> = nom::Err<nom::error::Error<&'a Input>>;
 
 pub fn parse<'a>(s: &'a str) -> Result<Expr, Error<'a>> {
-    match parse_main(s) {
-        Ok((_, e)) => Ok(e), /* TODO: check emptiness */
+    match tuple((skip_space, parse_main, skip_space))(s) {
+        Ok((s, ((), e, ()))) => {
+            if s.is_empty() {
+                Ok(e)
+            } else {
+                Err(nom::Err::Error(make_error(s, ErrorKind::Verify)))
+            }
+        }
         Err(err) => Err(err),
     }
 }
