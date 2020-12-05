@@ -7,28 +7,8 @@ use nom::{
 };
 use std::char;
 
+use crate::list::List;
 use crate::syntax::{Expr, Ident};
-
-enum List<T> {
-    Nil,
-    Cons(T, Box<List<T>>),
-}
-
-impl<T> List<T> {
-    fn len(&self) -> usize {
-        match self {
-            List::Nil => 0,
-            List::Cons(_, ref tail) => 1 + tail.len(),
-        }
-    }
-
-    fn foldl<A>(self, f: fn(A, T) -> A, acc: A) -> A {
-        match self {
-            List::Nil => acc,
-            List::Cons(x, tail) => tail.foldl(f, f(acc, x)),
-        }
-    }
-}
 
 /*
 impl<T> Iterator for List<T> {

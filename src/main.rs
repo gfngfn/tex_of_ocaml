@@ -2,6 +2,7 @@ use clap::Clap;
 use std::fs;
 
 mod error;
+mod list;
 mod parser;
 mod syntax;
 
