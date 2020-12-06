@@ -553,6 +553,21 @@
   \secd@ShowInt@Iter{}{}{0}{#1}{\secd@STRING}\secd@ENDVAL#2%
 }
 
+%% ==== Integer comparison ====
+\def\secd@PrimitiveIntIsZero#1\secd@End{%
+   %% #1 : stack that should have at least one element
+   \secd@PrimitiveIntIsZero@i#1\secd@End
+}
+\def\secd@PrimitiveIntIsZero@i\secd@INT#1\secd@ENDVAL#2\secd@End{%
+  %% #1 : the argument
+  %% #2 : the rest of the stack
+  \ifx\secd@unique#1\secd@unique\secd@Then
+    \secd@BOOL{T}\secd@ENDVAL#2%
+  \else\secd@Hop
+    \secd@BOOL{F}\secd@ENDVAL#2%
+  \fi
+}
+
 %% == Integer display ==
 \def\secd@ShowInt\secd@INT#1\secd@ENDVAL{%
   %% #1 : a natural number represented by a sequence of `o`
