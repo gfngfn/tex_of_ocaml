@@ -41,9 +41,20 @@ Then you can see “foo43” on the generated PDF.
 ## Syntax
 
 ```
-e ::= '(' e ')' | x | 'fun' x '->' e | e e | p | n | s
-x ::= (variables)
-p ::= 'add' | 'sub' | 'mult' | 'append' | 'arabic'
+e ::=
+    '(' e ')'
+  | x                         (variables)
+  | 'fun' x '->' e            (lambda abstractions)
+  | e e                       (applications)
+  | 'let' x '=' e 'in' e      (let-bindings)
+  | 'if' e 'then' e 'else' e  (conditionals)
+  | p                         (primitive operations)
+  | b                         (Boolean literals)
+  | n                         (integer literals)
+  | s                         (string literals)
+x ::= (identifiers)
+p ::= 'add' | 'sub' | 'mult' | 'append' | 'arabic' | 'iszero'
+b ::= 'true' | 'false'
 n ::= (non-negative decimal integer literals)
 s ::= (double-quoted string literals)
 ```
@@ -52,7 +63,14 @@ s ::= (double-quoted string literals)
 ## Supported primitives
 
 * `add : nat -> nat -> nat`
+  - integer addition
 * `sub : nat -> nat -> nat`
+  - integer subtraction where negative results are truncated to zero
 * `mult : nat -> nat -> nat`
+  - integer multiplication
 * `append : string -> string -> string`
+  - string concatenation
 * `arabic : nat -> string`
+  - converts integers to strings
+* `iszero : nat -> bool`
+  - checks whether the given integer is zero
