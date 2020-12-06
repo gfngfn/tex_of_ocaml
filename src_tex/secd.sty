@@ -335,24 +335,24 @@
 }
 
 %% == String concatenation ==
-\def\secd@PrimitiveStringConcat#1\secd@End{%
+\def\secd@PrimitiveStringAppend#1\secd@End{%
   %% #1 : stack that should have at least two elements
 %  \ifx\secd@unique#1\secd@unique
 %    \secd@ERROR{stack underflow (string concat 1)}%
 %  \else
-    \secd@PrimitiveStringConcat@i#1\secd@End
+    \secd@PrimitiveStringAppend@i#1\secd@End
 %  \fi
 }
-\def\secd@PrimitiveStringConcat@i\secd@STRING#1\secd@ENDVAL#2\secd@End{%
+\def\secd@PrimitiveStringAppend@i\secd@STRING#1\secd@ENDVAL#2\secd@End{%
   %% \secd@STRING#1\secd@ENDVAL : the first element of the stack (i.e. the second argument)
   %% #2                         : the rest of the stack
 %  \ifx\secd@unique#2\secd@unique
 %    \secd@ERROR{stack underflow (string concat 2)}%
 %  \else
-    \secd@PrimitiveStringConcat@ii{#1}#2\secd@End
+    \secd@PrimitiveStringAppend@ii{#1}#2\secd@End
 %  \fi
 }
-\def\secd@PrimitiveStringConcat@ii#1\secd@STRING#2\secd@ENDVAL#3\secd@End{%
+\def\secd@PrimitiveStringAppend@ii#1\secd@STRING#2\secd@ENDVAL#3\secd@End{%
   %% \secd@STRING#1\secd@ENDVAL : the first element of the stack (i.e. the second argument)
   %% \secd@STRING#2\secd@ENDVAL : the second element of the stack (i.e. the first argument)
   %% #3                         : the rest of the stack
