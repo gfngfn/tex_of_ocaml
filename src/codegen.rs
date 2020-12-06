@@ -30,6 +30,11 @@ fn accumulate(acc: String, instr: Instruction) -> String {
         }
         Instruction::Return => format!("{}RETURN{{}}", PREFIX),
         Instruction::Apply => format!("{}APPLY{{}}", PREFIX),
+        Instruction::If(instrs1, instrs2) => {
+            let s1 = iter(*instrs1);
+            let s2 = iter(*instrs2);
+            format!("{}IF{{{{{}}}{{{}}}}}", PREFIX, s1, s2)
+        }
         Instruction::Const(c) => match c {
             Const::Int(n) => {
                 let os = (0..n).map(|_| "o").collect::<String>();
@@ -39,6 +44,13 @@ fn accumulate(acc: String, instr: Instruction) -> String {
                 "{}CONST{{{}STRING{{{}}}{}ENDVAL}}",
                 PREFIX, PREFIX, s, PREFIX
             ),
+            Const::Bool(b) => {
+                let tag = if b { "T" } else { "F" };
+                format!(
+                    "{}CONST{{{}BOOL{{{}}}{}ENDVAL}}",
+                    PREFIX, PREFIX, tag, PREFIX
+                )
+            }
         },
         Instruction::Primitive(prim) => {
             let cmd = prim.command();

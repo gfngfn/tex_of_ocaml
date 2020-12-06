@@ -11,6 +11,12 @@ use std::char;
 use crate::list::List;
 use crate::syntax::{Const, Expr, Ident, Primitive};
 
+enum IdentResult {
+    Primitive(Primitive),
+    Const(Const),
+    Ident(Ident),
+}
+
 type Input = str;
 
 pub type Error<'a> = nom::Err<nom::error::Error<&'a Input>>;
@@ -38,19 +44,39 @@ fn skip_space(s: &Input) -> IResult<&Input, ()> {
 }
 
 fn parse_main(s: &Input) -> IResult<&Input, Expr> {
-    alt((parse_abstraction, parse_application))(s)
+    alt((parse_abstraction, parse_conditional, parse_application))(s)
 }
 
 fn parse_abstraction(s: &Input) -> IResult<&Input, Expr> {
     let (s, _) = tag("fun")(s)?;
     let (s, _) = skip_space(s)?;
-    let (s, res) = parse_ident(s)?;
-    let x: Ident = res.map_err(|_| error(s))?;
+    let (s, ires) = parse_ident(s)?;
+    let x: Ident = {
+        match ires {
+            IdentResult::Ident(x) => Ok(x),
+            _ => Err(error(s)),
+        }
+    }?;
     let (s, _) = skip_space(s)?;
     let (s, _) = tag("->")(s)?;
     let (s, _) = skip_space(s)?;
     let (s, e) = parse_main(s)?;
     Ok((s, Expr::Lambda(x, Box::new(e))))
+}
+
+fn parse_conditional(s: &Input) -> IResult<&Input, Expr> {
+    let (s, _) = tag("if")(s)?;
+    let (s, _) = skip_space(s)?;
+    let (s, e0) = parse_main(s)?;
+    let (s, _) = skip_space(s)?;
+    let (s, _) = tag("then")(s)?;
+    let (s, _) = skip_space(s)?;
+    let (s, e1) = parse_main(s)?;
+    let (s, _) = skip_space(s)?;
+    let (s, _) = tag("else")(s)?;
+    let (s, _) = skip_space(s)?;
+    let (s, e2) = parse_main(s)?;
+    Ok((s, Expr::If(Box::new(e0), Box::new(e1), Box::new(e2))))
 }
 
 fn parse_application(s: &Input) -> IResult<&Input, Expr> {
@@ -76,24 +102,31 @@ fn parse_single(s: &Input) -> IResult<&Input, Expr> {
 fn parse_variable(s: &Input) -> IResult<&Input, Expr> {
     let (s, res) = parse_ident(s)?;
     match res {
-        Ok(x) => Ok((s, Expr::Var(x))),
-        Err(prim) => Ok((s, Expr::Primitive(prim))),
+        IdentResult::Ident(x) => Ok((s, Expr::Var(x))),
+        IdentResult::Const(c) => Ok((s, Expr::Const(c))),
+        IdentResult::Primitive(prim) => Ok((s, Expr::Primitive(prim))),
     }
 }
 
-fn parse_ident(s: &Input) -> IResult<&Input, Result<Ident, Primitive>> {
+fn parse_ident(s: &Input) -> IResult<&Input, IdentResult> {
     let (s, opt) = map(take_while1(char::is_alphabetic), |alphas| match alphas {
         "fun" => None,
-        "add" => Some(Err(Primitive::Add)),
-        "sub" => Some(Err(Primitive::Sub)),
-        "mult" => Some(Err(Primitive::Mult)),
-        "append" => Some(Err(Primitive::Append)),
-        "arabic" => Some(Err(Primitive::Arabic)),
-        alphas => Some(Ok(Ident::of_string(alphas.to_string()))),
+        "if" => None,
+        "then" => None,
+        "else" => None,
+        "true" => Some(IdentResult::Const(Const::Bool(true))),
+        "false" => Some(IdentResult::Const(Const::Bool(false))),
+        "add" => Some(IdentResult::Primitive(Primitive::Add)),
+        "sub" => Some(IdentResult::Primitive(Primitive::Sub)),
+        "mult" => Some(IdentResult::Primitive(Primitive::Mult)),
+        "append" => Some(IdentResult::Primitive(Primitive::Append)),
+        "arabic" => Some(IdentResult::Primitive(Primitive::Arabic)),
+        "iszero" => Some(IdentResult::Primitive(Primitive::IsZero)),
+        alphas => Some(IdentResult::Ident(Ident::of_string(alphas.to_string()))),
     })(s)?;
     match opt {
         None => Err(error(s)),
-        Some(either) => Ok((s, either)),
+        Some(ires) => Ok((s, ires)),
     }
 }
 

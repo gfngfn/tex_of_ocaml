@@ -13,6 +13,7 @@ impl Ident {
 pub enum Const {
     Int(i32),
     String(String),
+    Bool(bool),
 }
 
 #[derive(Debug)]
@@ -22,6 +23,7 @@ pub enum Primitive {
     Mult,
     Append,
     Arabic,
+    IsZero,
 }
 
 impl Primitive {
@@ -32,6 +34,7 @@ impl Primitive {
             Primitive::Mult => 2,
             Primitive::Append => 2,
             Primitive::Arabic => 1,
+            Primitive::IsZero => 1,
         }
     }
 
@@ -42,6 +45,7 @@ impl Primitive {
             Primitive::Mult => "PrimitiveIntMult",
             Primitive::Append => "PrimitiveStringAppend",
             Primitive::Arabic => "PrimitiveArabic",
+            Primitive::IsZero => "PrimitiveIntIsZero",
         }
     }
 }
@@ -51,6 +55,7 @@ pub enum Expr {
     Var(Ident),
     Lambda(Ident, Box<Expr>),
     Apply(Box<Expr>, Box<Expr>),
+    If(Box<Expr>, Box<Expr>, Box<Expr>),
     Const(Const),
     Primitive(Primitive),
 }
@@ -61,6 +66,7 @@ pub enum Instruction {
     Closure(Box<List<Instruction>>),
     Return,
     Apply,
+    If(Box<List<Instruction>>, Box<List<Instruction>>),
     Const(Const),
     Primitive(Primitive),
 }
