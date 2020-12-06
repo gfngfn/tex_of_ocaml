@@ -101,8 +101,18 @@
     \secd@PRIM{\secd@PrimitiveIntMult}%
   }%
 }
+\edef\resultCi{%
+  \secd@EvalAndShow{%
+    \secd@CONST{\secd@BOOL{T}\secd@ENDVAL}%
+    \secd@IF{%
+      {\secd@CONST{\secd@INT{oooooooooo}\secd@ENDVAL}}%
+      {\secd@CONST{\secd@INT{}\secd@ENDVAL}}%
+    }%
+  }%
+}
 \makeatother
 \begin{document}
   \resultAi, \resultAii,
-  \resultBi, \resultBii, \resultBiii
+  \resultBi, \resultBii, \resultBiii,
+  \resultCi
 \end{document}
