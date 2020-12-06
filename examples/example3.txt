@@ -1,1 +1,1 @@
-(fun x -> fun f -> f x) "foo" (append "bar")
+(fun x -> fun f -> f (arabic (add 1 x))) 42 (append "foo")
