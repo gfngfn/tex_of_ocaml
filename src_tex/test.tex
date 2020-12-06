@@ -13,16 +13,16 @@
 %%   ```
 \edef\resultAi{%
   \secd@EvalAndShow{%
-      \secd@CLOSURE{%
-        \secd@CONST{\secd@STRING{foo}\secd@ENDVAL}%
-        \secd@CONST{\secd@STRING{bar}\secd@ENDVAL}%
-        \secd@PRIM{\secd@PrimitiveStringConcat}%
-        \secd@ACCESS{}%
-        \secd@PRIM{\secd@PrimitiveStringConcat}%
-        \secd@RETURN{}%
-      }%
-      \secd@CONST{\secd@STRING{baz}\secd@ENDVAL}%
-      \secd@APPLY{}%
+    \secd@CLOSURE{%
+      \secd@CONST{\secd@STRING{foo}\secd@ENDVAL}%
+      \secd@CONST{\secd@STRING{bar}\secd@ENDVAL}%
+      \secd@PRIM{\secd@PrimitiveStringConcat}%
+      \secd@ACCESS{}%
+      \secd@PRIM{\secd@PrimitiveStringConcat}%
+      \secd@RETURN{}%
+    }%
+    \secd@CONST{\secd@STRING{baz}\secd@ENDVAL}%
+    \secd@APPLY{}%
   }%
 }
 %% Evaluate `(fun x -> (fun y -> y ^ "bar" ^ x)) "baz" "foo"`
@@ -39,21 +39,21 @@
 %%   ```
 \edef\resultAii{%
   \secd@EvalAndShow{%
+    \secd@CLOSURE{%
       \secd@CLOSURE{%
-        \secd@CLOSURE{%
-          \secd@ACCESS{}%
-          \secd@CONST{\secd@STRING{bar}\secd@ENDVAL}%
-          \secd@PRIM{\secd@PrimitiveStringConcat}%
-          \secd@ACCESS{*}%
-          \secd@PRIM{\secd@PrimitiveStringConcat}%
-          \secd@RETURN{}%
-        }%
+        \secd@ACCESS{}%
+        \secd@CONST{\secd@STRING{bar}\secd@ENDVAL}%
+        \secd@PRIM{\secd@PrimitiveStringConcat}%
+        \secd@ACCESS{*}%
+        \secd@PRIM{\secd@PrimitiveStringConcat}%
         \secd@RETURN{}%
       }%
-      \secd@CONST{\secd@STRING{baz}\secd@ENDVAL}%
-      \secd@APPLY{}%
-      \secd@CONST{\secd@STRING{foo}\secd@ENDVAL}%
-      \secd@APPLY{}%
+      \secd@RETURN{}%
+    }%
+    \secd@CONST{\secd@STRING{baz}\secd@ENDVAL}%
+    \secd@APPLY{}%
+    \secd@CONST{\secd@STRING{foo}\secd@ENDVAL}%
+    \secd@APPLY{}%
   }%
 }
 %% Evaluate `(14 + 9)`
@@ -66,9 +66,9 @@
 %%   ```
 \edef\resultBi{%
   \secd@EvalAndShow{%
-      \secd@CONST{\secd@INT{oooooooooooooo}\secd@ENDVAL}%
-      \secd@CONST{\secd@INT{ooooooooo}\secd@ENDVAL}%
-      \secd@PRIM{\secd@PrimitiveIntAdd}%
+    \secd@CONST{\secd@INT{oooooooooooooo}\secd@ENDVAL}%
+    \secd@CONST{\secd@INT{ooooooooo}\secd@ENDVAL}%
+    \secd@PRIM{\secd@PrimitiveIntAdd}%
   }%
 }
 %% Evaluate `(14 - 9)`
@@ -81,9 +81,9 @@
 %%   ```
 \edef\resultBii{%
   \secd@EvalAndShow{%
-      \secd@CONST{\secd@INT{oooooooooooooo}\secd@ENDVAL}%
-      \secd@CONST{\secd@INT{ooooooooo}\secd@ENDVAL}%
-      \secd@PRIM{\secd@PrimitiveIntSub}%
+    \secd@CONST{\secd@INT{oooooooooooooo}\secd@ENDVAL}%
+    \secd@CONST{\secd@INT{ooooooooo}\secd@ENDVAL}%
+    \secd@PRIM{\secd@PrimitiveIntSub}%
   }%
 }
 %% Evaluate `(14 * 3)`
@@ -96,9 +96,9 @@
 %%   ```
 \edef\resultBiii{%
   \secd@EvalAndShow{%
-      \secd@CONST{\secd@INT{oooooooooooooo}\secd@ENDVAL}%
-      \secd@CONST{\secd@INT{ooo}\secd@ENDVAL}%
-      \secd@PRIM{\secd@PrimitiveIntMult}%
+    \secd@CONST{\secd@INT{oooooooooooooo}\secd@ENDVAL}%
+    \secd@CONST{\secd@INT{ooo}\secd@ENDVAL}%
+    \secd@PRIM{\secd@PrimitiveIntMult}%
   }%
 }
 \makeatother
