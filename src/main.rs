@@ -1,5 +1,6 @@
 use clap::Clap;
 use std::fs;
+use std::io::prelude::*;
 
 mod codegen;
 mod compiler;
@@ -51,7 +52,16 @@ fn run(opts: Opts) {
                         Ok(instrs) => {
                             println!("Instruction: {:?}", instrs);
                             let code = codegen::output(instrs);
-                            println!("Code: {:?}", code)
+                            println!("Code: {:?}", code);
+                            if let Some(output_path) = opts.output.as_ref() {
+                                let res = output(output_path, &code);
+                                match res {
+                                    Ok(()) => println!("Output written."),
+                                    Err(err) => println!("Error: {:?}", err),
+                                }
+                            } else {
+                                println!("No output.")
+                            }
                         }
                         Err(err) => println!("Error: {:?}", err),
                     }
@@ -60,4 +70,9 @@ fn run(opts: Opts) {
             }
         }
     }
+}
+
+fn output(output_path: &String, code: &str) -> std::io::Result<()> {
+    let mut out = fs::File::create(output_path)?;
+    out.write_all(code.as_bytes())
 }
