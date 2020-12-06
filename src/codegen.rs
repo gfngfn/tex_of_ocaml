@@ -1,5 +1,5 @@
 use crate::list::List;
-use crate::syntax::{Const, Instruction, Primitive};
+use crate::syntax::{Const, Instruction};
 
 const PREFIX: &str = "\\secd@";
 const DOCUMENT_CLASS: &str = "jsarticle";
@@ -41,12 +41,7 @@ fn accumulate(acc: String, instr: Instruction) -> String {
             ),
         },
         Instruction::Primitive(prim) => {
-            let cmd = match prim {
-                Primitive::Add => "PrimitiveIntAdd",
-                Primitive::Sub => "PrimitiveIntSub",
-                Primitive::Mult => "PrimitiveIntMult",
-                Primitive::Append => "PrimitiveStringAppend",
-            };
+            let cmd = prim.command();
             format!("{}PRIM{{{}{}}}", PREFIX, PREFIX, cmd)
         }
     };

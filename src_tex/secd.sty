@@ -447,62 +447,75 @@
   %% #3 : the number to multiply
   \secd@PrimitiveIntMult@Iter{#1#3}{#2}{#3}%
 }
+%% == Integer to string ==
+\def\secd@PrimitiveArabic#1\secd@End{%
+  %% #1 : stack that should have at least one element
+  \secd@PrimitiveArabic@i#1\secd@End
+}
+\def\secd@PrimitiveArabic@i\secd@INT#1\secd@ENDVAL#2\secd@End{%
+  %% \secd@INT#1\secd@ENDVAL : the first element of the stack (i.e. the argument)
+  %% #2                      : the rest of the stack
+  \secd@ShowInt@Iter{}{}{0}{#1}{\secd@STRING}\secd@ENDVAL#2%
+}
 
 %% == Integer display ==
 \def\secd@ShowInt\secd@INT#1\secd@ENDVAL{%
   %% #1 : a natural number represented by a sequence of `o`
-  \secd@ShowInt@Iter{}{}{0}{#1}%
+  \secd@ShowInt@Iter{}{}{0}{#1}{}%
 }
-\def\secd@ShowInt@Iter#1#2#3#4{%
+\def\secd@ShowInt@Iter#1#2#3#4#5{%
   %% #1 : an accumulator of resulting digits
   %% #2 : an accumulator for the next (10^n)s
   %% #3 : a counter represented by a digit
   %% #4 : a natural number represented by a sequence of `o`
+  %% #5 : prefix for the result
   \ifx\secd@unique#4\secd@unique\secd@Then
     %% If reached the end, shift to the next (10^n)s place or finish.
-    \secd@ShowInt@ShiftOrEnd{#1}{#2}{#3}%
+    \secd@ShowInt@ShiftOrEnd{#1}{#2}{#3}{#5}%
   \else\secd@Hop
     %% Otherwise, increment the counter.
-    \secd@ShowInt@IncrementDigit{#1}{#2}{#3}#4\secd@End
+    \secd@ShowInt@IncrementDigit{#1}{#2}{#3}#4\secd@End{#5}%
   \fi
 }
-\def\secd@ShowInt@ShiftOrEnd#1#2#3{%
+\def\secd@ShowInt@ShiftOrEnd#1#2#3#4{%
   %% #1 : an accumulator for digits
   %% #2 : an accumulator for the next 10s
   %% #3 : a counter represented by a digit
+  %% #4 : prefix for the result
   \ifx\secd@unique#2\secd@unique\secd@Then
     %% If the next (10^n)s place is not needed, return the result.
-    #3#1%
+    #4#3#1%
   \else\secd@Hop
     %% Otherwise, shift the (10^n)s place.
-    \secd@ShowInt@Iter{#3#1}{}{0}{#2}%
+    \secd@ShowInt@Iter{#3#1}{}{0}{#2}{#4}%
   \fi
 }
-\def\secd@ShowInt@IncrementDigit#1#2#3o#4\secd@End{%
+\def\secd@ShowInt@IncrementDigit#1#2#3o#4\secd@End#5{%
   %% #1 : an accumulator of resulting digits
   %% #2 : an accumulator for the next (10^n)s
   %% #3 : a counter represented by a digit
   %% #4 : a decremented natural number represented by a sequence of `o`
+  %% #5 : prefix for the result
   \ifcase#3 \secd@HopOr
-    \secd@ShowInt@Iter{#1}{#2}{1}{#4}%
+    \secd@ShowInt@Iter{#1}{#2}{1}{#4}{#5}%
   \or\secd@HopOr
-    \secd@ShowInt@Iter{#1}{#2}{2}{#4}%
+    \secd@ShowInt@Iter{#1}{#2}{2}{#4}{#5}%
   \or\secd@HopOr
-    \secd@ShowInt@Iter{#1}{#2}{3}{#4}%
+    \secd@ShowInt@Iter{#1}{#2}{3}{#4}{#5}%
   \or\secd@HopOr
-    \secd@ShowInt@Iter{#1}{#2}{4}{#4}%
+    \secd@ShowInt@Iter{#1}{#2}{4}{#4}{#5}%
   \or\secd@HopOr
-    \secd@ShowInt@Iter{#1}{#2}{5}{#4}%
+    \secd@ShowInt@Iter{#1}{#2}{5}{#4}{#5}%
   \or\secd@HopOr
-    \secd@ShowInt@Iter{#1}{#2}{6}{#4}%
+    \secd@ShowInt@Iter{#1}{#2}{6}{#4}{#5}%
   \or\secd@HopOr
-    \secd@ShowInt@Iter{#1}{#2}{7}{#4}%
+    \secd@ShowInt@Iter{#1}{#2}{7}{#4}{#5}%
   \or\secd@HopOr
-    \secd@ShowInt@Iter{#1}{#2}{8}{#4}%
+    \secd@ShowInt@Iter{#1}{#2}{8}{#4}{#5}%
   \or\secd@HopOr
-    \secd@ShowInt@Iter{#1}{#2}{9}{#4}%
+    \secd@ShowInt@Iter{#1}{#2}{9}{#4}{#5}%
   \or\secd@Hop
     %% If the current counter is 9, set the carry digit.
-    \secd@ShowInt@Iter{#1}{o#2}{0}{#4}%
+    \secd@ShowInt@Iter{#1}{o#2}{0}{#4}{#5}%
   \fi
 }

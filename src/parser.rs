@@ -88,6 +88,7 @@ fn parse_ident(s: &Input) -> IResult<&Input, Result<Ident, Primitive>> {
         "sub" => Some(Err(Primitive::Sub)),
         "mult" => Some(Err(Primitive::Mult)),
         "append" => Some(Err(Primitive::Append)),
+        "arabic" => Some(Err(Primitive::Arabic)),
         alphas => Some(Ok(Ident::of_string(alphas.to_string()))),
     })(s)?;
     match opt {

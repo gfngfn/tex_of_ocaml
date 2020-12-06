@@ -10,6 +10,7 @@ type LevelMap = HashMap<Ident, Level>;
 #[derive(Debug)]
 pub enum Error {
     UnboundVariable(Ident),
+    BugOfUnknownArity(i32),
 }
 
 pub fn compile(e: Expr) -> Result<List<Instruction>, Error> {
@@ -42,20 +43,36 @@ fn iter(lev: Level, levmap: &LevelMap, e: Expr) -> Result<List<Instruction>, Err
 
         Expr::Const(c) => Ok(List::singleton(Instruction::Const(c))),
 
-        Expr::Primitive(prim) => {
-            /* Currently handle arity-2 primitives only.*/
-            let app: List<Instruction> = cons(
-                Instruction::Access(1),
-                cons(
+        Expr::Primitive(prim) => match prim.arity() {
+            1 => {
+                let sub: List<Instruction> = cons(
                     Instruction::Access(0),
-                    List::singleton(Instruction::Primitive(prim)),
-                ),
-            );
-            let inner =
-                Instruction::Closure(Box::new(append(app, List::singleton(Instruction::Return))));
-            let outer =
-                Instruction::Closure(Box::new(cons(inner, List::singleton(Instruction::Return))));
-            Ok(List::singleton(outer))
-        }
+                    cons(
+                        Instruction::Primitive(prim),
+                        List::singleton(Instruction::Return),
+                    ),
+                );
+                Ok(List::singleton(Instruction::Closure(Box::new(sub))))
+            }
+            2 => {
+                let app: List<Instruction> = cons(
+                    Instruction::Access(1),
+                    cons(
+                        Instruction::Access(0),
+                        List::singleton(Instruction::Primitive(prim)),
+                    ),
+                );
+                let inner = Instruction::Closure(Box::new(append(
+                    app,
+                    List::singleton(Instruction::Return),
+                )));
+                let outer = Instruction::Closure(Box::new(cons(
+                    inner,
+                    List::singleton(Instruction::Return),
+                )));
+                Ok(List::singleton(outer))
+            }
+            arity => Err(Error::BugOfUnknownArity(arity)),
+        },
     }
 }

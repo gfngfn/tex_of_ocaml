@@ -21,6 +21,29 @@ pub enum Primitive {
     Sub,
     Mult,
     Append,
+    Arabic,
+}
+
+impl Primitive {
+    pub fn arity(&self) -> i32 {
+        match self {
+            Primitive::Add => 2,
+            Primitive::Sub => 2,
+            Primitive::Mult => 2,
+            Primitive::Append => 2,
+            Primitive::Arabic => 1,
+        }
+    }
+
+    pub fn command(&self) -> &str {
+        match self {
+            Primitive::Add => "PrimitiveIntAdd",
+            Primitive::Sub => "PrimitiveIntSub",
+            Primitive::Mult => "PrimitiveIntMult",
+            Primitive::Append => "PrimitiveStringAppend",
+            Primitive::Arabic => "PrimitiveArabic",
+        }
+    }
 }
 
 #[derive(Debug)]
