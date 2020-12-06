@@ -1,0 +1,1 @@
+(fun x -> fun f -> f x) "foo" (append "bar")
