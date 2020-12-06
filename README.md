@@ -8,8 +8,8 @@ Note: This project is a kind of joke and probably not of practical use.
 
 This software consists of the following:
 
-* A compiler for untyped lambda-terms (which have OCaml-like syntax) to *(Knuthian) TeX code fully-expandable by `\edef`* (written in Rust)
-* A virtual machine based on the *SECD machine* (written in TeX itself)
+* `src/`: A compiler for untyped lambda-terms (which have OCaml-like syntax) to *(Knuthian) TeX code fully-expandable by `\edef`* (written in Rust)
+* `src_tex/secd.sty`: A virtual machine based on the *SECD machine* (written in TeX itself)
 
 
 ## How to use
