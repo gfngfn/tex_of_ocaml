@@ -278,7 +278,7 @@
   }%
 }
 \def\secd@EvalAndShow#1{%
-  \expandafter\secd@Show\romannumeral-`0#1%
+  \expandafter\secd@Show\romannumeral-`0\secd@Run{}{}{#1}{}%
 }
 \def\secd@Show#1#2\secd@ENDVAL{%
   \secd@IfSameCS#1\secd@INT{\secd@ShowInt\secd@INT#2\secd@ENDVAL}{%
