@@ -1,17 +1,49 @@
 %% Premise:
 %%
 %% - The interpreter is implemented based on the SECD Machine.
-%% - Natural numbers used as indices are represented by (possibly empty) lists of `*`
-%%   (see `\secd@AccessNonZeroIndex`).
-%% - Values are treated in the form `\secd@XXX … \secd@ENDVAL`.
+%%
+%% - Natural numbers used as indices are represented by
+%%   (possibly empty) lists of `*` (see `\secd@AccessNonZeroIndex`):
+%%   ```
+%%   〈Index〉 ::= ［*］
+%%   ```
+%%   Here, `［…］` stands for the (possibly empty) repetition.
+%%
+%% - Values are treated in the following forms:
+%%   ```
+%%   〈Value〉 ::=
+%%      | \secd@CLOS{〈Code〉}{〈Environment〉}\secd@ENDVAL
+%%      | \secd@INT{〈Number〉}\secd@ENDVAL
+%%      | \secd@STRING{〈String〉}\secd@ENDVAL
+%%
+%%   〈Code〉 ::= ［〈Instruction〉］
+%%
+%%   〈Number〉 ::= ［o］
+%%   ```
 %%   * Closures are represented by `\secd@CLOS{〈C〉}{〈E〉}\secd@ENDVAL`
 %%     where `〈C〉` is the code that forms the body of the closure,
 %%     and `〈E〉` is the environment that will be used for evaluating `〈C〉`.
-%%   * Natural numbers are represented by `\secd@INT{…}\secd@ENDVAL` where `…` is a sequence of `o`.
-%%   * Strings are represented by `\secd@STRING{…}\secd@ENDVAL` where `…` is an ordinary sequence of characters.
-%% - Either a stack or an environment is a list made up simply by concatenating values.
+%%   * Natural numbers are represented by `\secd@INT{〈N〉}\secd@ENDVAL` where `〈N〉` is a sequence of `o`.
+%%   * Strings are represented by `\secd@STRING{〈S〉}\secd@ENDVAL` where `〈S〉` is an ordinary sequence of characters.
+%%
+%% - Either a stack or an environment is a list made up simply by concatenating values:
+%%   ```
+%%   〈Environment〉 ::= ［〈Value〉］
+%%   ```
+%%
 %% - A dump is of the form `\secd@DUMP{〈C_1〉}{〈E_1〉} … \secd@DUMP{〈C_n〉}{〈E_n〉}`
 %%   where each `〈C_i〉` is saved code and each `〈E_i〉` is a saved environment.
+%%
+%% - Instructions are of the following forms:
+%%   ```
+%%   〈Instruction〉 ::=
+%%     | \secd@ACCESS{〈Index〉}
+%%     | \secd@CLOSURE{〈Code〉}
+%%     | \secd@APPLY{}
+%%     | \secd@RETURN{}
+%%     | \secd@CONST{〈Value〉}
+%%     | \secd@PRIM{〈PrimitiveCommand〉}
+%%   ```
 
 \def\secd@unique{\secd@unique@dummy}
 \def\secd@Then#1\else#2\fi{\fi#1}
