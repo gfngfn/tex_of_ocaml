@@ -360,9 +360,6 @@
 }
 
 %% == String display ==
-\def\secd@EvalAndShowString#1{%
-  \expandafter\secd@ShowString\romannumeral-`0#1%
-}
 \def\secd@ShowString\secd@STRING#1\secd@ENDVAL{#1}
 
 %% == Integer addition ==
@@ -452,9 +449,6 @@
 }
 
 %% == Integer display ==
-\def\secd@EvalAndShowInt#1{%
-  \expandafter\secd@ShowInt\romannumeral-`0#1%
-}
 \def\secd@ShowInt\secd@INT#1\secd@ENDVAL{%
   %% #1 : a natural number represented by a sequence of `o`
   \secd@ShowInt@Iter{}{}{0}{#1}%
