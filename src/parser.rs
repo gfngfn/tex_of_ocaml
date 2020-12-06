@@ -44,7 +44,12 @@ fn skip_space(s: &Input) -> IResult<&Input, ()> {
 }
 
 fn parse_main(s: &Input) -> IResult<&Input, Expr> {
-    alt((parse_abstraction, parse_conditional, parse_application))(s)
+    alt((
+        parse_abstraction,
+        parse_conditional,
+        parse_let,
+        parse_application,
+    ))(s)
 }
 
 fn parse_abstraction(s: &Input) -> IResult<&Input, Expr> {
@@ -79,6 +84,30 @@ fn parse_conditional(s: &Input) -> IResult<&Input, Expr> {
     Ok((s, Expr::If(Box::new(e0), Box::new(e1), Box::new(e2))))
 }
 
+fn parse_let(s: &Input) -> IResult<&Input, Expr> {
+    let (s, _) = tag("let")(s)?;
+    let (s, _) = skip_space(s)?;
+    let (s, ires) = parse_ident(s)?;
+    let x: Ident = {
+        match ires {
+            IdentResult::Ident(x) => Ok(x),
+            _ => Err(error(s)),
+        }
+    }?;
+    let (s, _) = skip_space(s)?;
+    let (s, _) = tag("=")(s)?;
+    let (s, _) = skip_space(s)?;
+    let (s, e1) = parse_main(s)?;
+    let (s, _) = skip_space(s)?;
+    let (s, _) = tag("in")(s)?;
+    let (s, _) = skip_space(s)?;
+    let (s, e2) = parse_main(s)?;
+    Ok((
+        s,
+        Expr::Apply(Box::new(Expr::Lambda(x, Box::new(e2))), Box::new(e1)),
+    ))
+}
+
 fn parse_application(s: &Input) -> IResult<&Input, Expr> {
     let (s, (e, eargs)) = parse_single_list(s)?;
     let eret: Expr = eargs.foldl(|eapp, earg| Expr::Apply(Box::new(eapp), Box::new(earg)), e);
@@ -111,6 +140,8 @@ fn parse_variable(s: &Input) -> IResult<&Input, Expr> {
 fn parse_ident(s: &Input) -> IResult<&Input, IdentResult> {
     let (s, opt) = map(take_while1(char::is_alphabetic), |alphas| match alphas {
         "fun" => None,
+        "let" => None,
+        "in" => None,
         "if" => None,
         "then" => None,
         "else" => None,
