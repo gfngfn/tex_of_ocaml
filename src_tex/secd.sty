@@ -322,6 +322,7 @@
   }%
 }
 \def\secd@IfSameCS#1#2#3#4{%
+  % Expand #3 if #1 and #2 are the same control sequence, or expand #4 otherwise.
   % #1 : control sequence 1
   % #2 : control sequence 2
   % #3 : then-branch
@@ -355,7 +356,7 @@
   \fi
 }
 \def\secd@IfEmpty#1\secd@End#2#3{%
-  % If #1 is an empty sequence, invoke #3.
+  % Expand #2 if #1 is an empty sequence, or expand #3 otherwise.
   % #1 : stringified control sequence 2
   % #2 : then-branch
   % #3 : else-branch
