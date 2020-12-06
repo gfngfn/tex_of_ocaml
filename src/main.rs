@@ -28,14 +28,7 @@ struct Opts {
 
 fn main() {
     let opts = Opts::parse();
-    display(&opts);
     run(opts);
-}
-
-fn display(opts: &Opts) {
-    let input: &String = &opts.input;
-    let output: Option<&String> = opts.output.as_ref();
-    println!("Hello, world! (input: {:?}, output: {:?})", input, output);
 }
 
 fn run(opts: Opts) {
@@ -47,12 +40,12 @@ fn run(opts: Opts) {
             let input = &s;
             match parser::parse(input).map_err(Error::of_parse_error) {
                 Ok(e) => {
-                    println!("Expression: {:?}", e);
+                    /* println!("Expression: {:?}", e); */
                     match compiler::compile(e) {
                         Ok(instrs) => {
-                            println!("Instruction: {:?}", instrs);
+                            /* println!("Instruction: {:?}", instrs); */
                             let code = codegen::output(instrs);
-                            println!("Code: {:?}", code);
+                            /* println!("Code: {:?}", code); */
                             if let Some(output_path) = opts.output.as_ref() {
                                 let res = output(output_path, &code);
                                 match res {
