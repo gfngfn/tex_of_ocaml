@@ -1,1 +1,1 @@
-(fun x -> x) 42
+(fun x -> add x 1) 42
