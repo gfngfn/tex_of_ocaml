@@ -1,0 +1,3 @@
+let fix = (fun f -> (fun x -> f (fun v -> x x v)) (fun x -> f (fun v -> x x v))) in
+let fact = fix (fun f -> fun n -> if iszero n then 1 else mult n (f (sub n 1))) in
+fact 5

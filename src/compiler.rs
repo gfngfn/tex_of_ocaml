@@ -41,6 +41,16 @@ fn iter(lev: Level, levmap: &LevelMap, e: Expr) -> Result<List<Instruction>, Err
             ))
         }
 
+        Expr::If(e0, e1, e2) => {
+            let instrs0 = iter(lev, levmap, *e0)?;
+            let instrs1 = iter(lev, levmap, *e1)?;
+            let instrs2 = iter(lev, levmap, *e2)?;
+            Ok(append(
+                instrs0,
+                List::singleton(Instruction::If(Box::new(instrs1), Box::new(instrs2))),
+            ))
+        }
+
         Expr::Const(c) => Ok(List::singleton(Instruction::Const(c))),
 
         Expr::Primitive(prim) => match prim.arity() {

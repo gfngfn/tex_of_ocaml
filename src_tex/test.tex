@@ -101,8 +101,30 @@
     \secd@PRIM{\secd@PrimitiveIntMult}%
   }%
 }
+\edef\resultCi{%
+  \secd@EvalAndShow{%
+    \secd@CONST{\secd@INT{}\secd@ENDVAL}%
+    \secd@PRIM{\secd@PrimitiveIntIsZero}%
+  }%
+}
+\edef\resultCii{%
+  \secd@EvalAndShow{%
+    \secd@CONST{\secd@INT{oo}\secd@ENDVAL}%
+    \secd@PRIM{\secd@PrimitiveIntIsZero}%
+  }%
+}
+\edef\resultCiii{%
+  \secd@EvalAndShow{%
+    \secd@CONST{\secd@BOOL{T}\secd@ENDVAL}%
+    \secd@IF{%
+      {\secd@CONST{\secd@INT{oooooooooo}\secd@ENDVAL}}%
+      {\secd@CONST{\secd@INT{}\secd@ENDVAL}}%
+    }%
+  }%
+}
 \makeatother
 \begin{document}
-  \resultAi, \resultAii,
-  \resultBi, \resultBii, \resultBiii
+  A1: \resultAi, A2: \resultAii\par
+  B1: \resultBi, B2: \resultBii, B3: \resultBiii\par
+  C1: \resultCi, C2: \resultCii, C3: \resultCiii\par
 \end{document}
