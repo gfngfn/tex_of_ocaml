@@ -374,9 +374,11 @@
 }
 \def\secd@Show#1#2\secd@ENDVAL{%
   \secd@IfSameCS#1\secd@INT{\secd@ShowInt\secd@INT#2\secd@ENDVAL}{%
-    \secd@IfSameCS#1\secd@STRING{\secd@ShowString\secd@STRING#2\secd@ENDVAL}{%
-      \secd@IfSameCS#1\secd@CLOS{(closure)}{%
-        (unknown value)%
+    \secd@IfSameCS#1\secd@BOOL{\secd@ShowBool\secd@BOOL#2\secd@ENDVAL}{%
+      \secd@IfSameCS#1\secd@STRING{\secd@ShowString\secd@STRING#2\secd@ENDVAL}{%
+        \secd@IfSameCS#1\secd@CLOS{(closure)}{%
+          (unknown value)%
+        }%
       }%
     }%
   }%
@@ -610,5 +612,14 @@
   \or\secd@Hop
     %% If the current counter is 9, set the carry digit.
     \secd@ShowInt@Iter{#1}{o#2}{0}{#4}{#5}%
+  \fi
+}
+
+%% ==== Boolean display ====
+\def\secd@ShowBool\secd@BOOL#1\secd@ENDVAL{%
+  \ifx#1T\secd@Then
+    true%
+  \else\secd@Hop
+    false%
   \fi
 }

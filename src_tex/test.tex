@@ -104,6 +104,11 @@
 \edef\resultCi{%
   \secd@EvalAndShow{%
     \secd@CONST{\secd@BOOL{T}\secd@ENDVAL}%
+  }%
+}
+\edef\resultCii{%
+  \secd@EvalAndShow{%
+    \secd@CONST{\secd@BOOL{T}\secd@ENDVAL}%
     \secd@IF{%
       {\secd@CONST{\secd@INT{oooooooooo}\secd@ENDVAL}}%
       {\secd@CONST{\secd@INT{}\secd@ENDVAL}}%
@@ -112,7 +117,7 @@
 }
 \makeatother
 \begin{document}
-  \resultAi, \resultAii,
-  \resultBi, \resultBii, \resultBiii,
-  \resultCi
+  A1: \resultAi, A2: \resultAii\par
+  B1: \resultBi, B2: \resultBii, B3: \resultBiii\par
+  C1: \resultCi, C2: \resultCii\par
 \end{document}
