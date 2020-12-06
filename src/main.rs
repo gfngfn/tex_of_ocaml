@@ -1,6 +1,7 @@
 use clap::Clap;
 use std::fs;
 
+mod codegen;
 mod compiler;
 mod error;
 mod list;
@@ -49,6 +50,8 @@ fn run(opts: Opts) {
                     match compiler::compile(e) {
                         Ok(instrs) => {
                             println!("Instruction: {:?}", instrs);
+                            let code = codegen::output(instrs);
+                            println!("Code: {:?}", code)
                         }
                         Err(err) => println!("Error: {:?}", err),
                     }
