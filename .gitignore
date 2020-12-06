@@ -8,3 +8,4 @@
 *.pdf
 *.synctex.gz
 target/
+_generated/
