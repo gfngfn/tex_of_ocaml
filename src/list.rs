@@ -30,3 +30,7 @@ pub fn append<T>(xs: List<T>, ys: List<T>) -> List<T> {
         List::Cons(x, xtail) => List::Cons(x, Box::new(append(*xtail, ys))),
     }
 }
+
+pub fn cons<T>(x: T, xs: List<T>) -> List<T> {
+    List::Cons(x, Box::new(xs))
+}

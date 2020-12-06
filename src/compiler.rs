@@ -1,6 +1,6 @@
 use im::hashmap::HashMap;
 
-use crate::list::{append, List};
+use crate::list::{append, cons, List};
 use crate::syntax::{Expr, Ident, Instruction};
 
 type Level = i32;
@@ -41,5 +41,21 @@ fn iter(lev: Level, levmap: &LevelMap, e: Expr) -> Result<List<Instruction>, Err
         }
 
         Expr::Const(c) => Ok(List::singleton(Instruction::Const(c))),
+
+        Expr::Primitive(prim) => {
+            /* Currently handle arity-2 primitives only.*/
+            let app: List<Instruction> = cons(
+                Instruction::Access(1),
+                cons(
+                    Instruction::Access(0),
+                    List::singleton(Instruction::Primitive(prim)),
+                ),
+            );
+            let inner =
+                Instruction::Closure(Box::new(append(app, List::singleton(Instruction::Return))));
+            let outer =
+                Instruction::Closure(Box::new(cons(inner, List::singleton(Instruction::Return))));
+            Ok(List::singleton(outer))
+        }
     }
 }

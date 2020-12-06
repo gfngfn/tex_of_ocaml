@@ -16,11 +16,20 @@ pub enum Const {
 }
 
 #[derive(Debug)]
+pub enum Primitive {
+    Add,
+    Sub,
+    Mult,
+    Append,
+}
+
+#[derive(Debug)]
 pub enum Expr {
     Var(Ident),
     Lambda(Ident, Box<Expr>),
     Apply(Box<Expr>, Box<Expr>),
     Const(Const),
+    Primitive(Primitive),
 }
 
 #[derive(Debug)]
@@ -30,4 +39,5 @@ pub enum Instruction {
     Return,
     Apply,
     Const(Const),
+    Primitive(Primitive),
 }

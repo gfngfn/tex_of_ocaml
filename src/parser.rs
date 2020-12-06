@@ -1,7 +1,7 @@
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_while, take_while1},
-    combinator::{map, opt, verify},
+    combinator::{map, opt},
     error::{make_error, ErrorKind},
     sequence::tuple,
     IResult,
@@ -9,7 +9,7 @@ use nom::{
 use std::char;
 
 use crate::list::List;
-use crate::syntax::{Const, Expr, Ident};
+use crate::syntax::{Const, Expr, Ident, Primitive};
 
 type Input = str;
 
@@ -21,23 +21,20 @@ pub fn parse<'a>(s: &'a str) -> Result<Expr, Error<'a>> {
             if s.is_empty() {
                 Ok(e)
             } else {
-                Err(nom::Err::Error(make_error(s, ErrorKind::Verify)))
+                Err(error(s))
             }
         }
         Err(err) => Err(err),
     }
 }
 
+fn error<'a>(s: &'a Input) -> Error<'a> {
+    nom::Err::Error(make_error(s, ErrorKind::Verify))
+}
+
 fn skip_space(s: &Input) -> IResult<&Input, ()> {
     let (s, _) = take_while(char::is_whitespace)(s)?;
     Ok((s, ()))
-}
-
-fn is_not_reserved(word: &str) -> bool {
-    match word {
-        "fun" => false,
-        _ => true,
-    }
 }
 
 fn parse_main(s: &Input) -> IResult<&Input, Expr> {
@@ -47,7 +44,8 @@ fn parse_main(s: &Input) -> IResult<&Input, Expr> {
 fn parse_abstraction(s: &Input) -> IResult<&Input, Expr> {
     let (s, _) = tag("fun")(s)?;
     let (s, _) = skip_space(s)?;
-    let (s, x) = parse_ident(s)?;
+    let (s, res) = parse_ident(s)?;
+    let x: Ident = res.map_err(|_| error(s))?;
     let (s, _) = skip_space(s)?;
     let (s, _) = tag("->")(s)?;
     let (s, _) = skip_space(s)?;
@@ -76,13 +74,26 @@ fn parse_single(s: &Input) -> IResult<&Input, Expr> {
 }
 
 fn parse_variable(s: &Input) -> IResult<&Input, Expr> {
-    let (s, x) = parse_ident(s)?;
-    Ok((s, Expr::Var(x)))
+    let (s, res) = parse_ident(s)?;
+    match res {
+        Ok(x) => Ok((s, Expr::Var(x))),
+        Err(prim) => Ok((s, Expr::Primitive(prim))),
+    }
 }
 
-fn parse_ident(s: &Input) -> IResult<&Input, Ident> {
-    let (s, alphas) = verify(take_while1(char::is_alphabetic), is_not_reserved)(s)?;
-    Ok((s, Ident::of_string(alphas.to_string())))
+fn parse_ident(s: &Input) -> IResult<&Input, Result<Ident, Primitive>> {
+    let (s, opt) = map(take_while1(char::is_alphabetic), |alphas| match alphas {
+        "fun" => None,
+        "add" => Some(Err(Primitive::Add)),
+        "sub" => Some(Err(Primitive::Sub)),
+        "mult" => Some(Err(Primitive::Mult)),
+        "append" => Some(Err(Primitive::Append)),
+        alphas => Some(Ok(Ident::of_string(alphas.to_string()))),
+    })(s)?;
+    match opt {
+        None => Err(error(s)),
+        Some(either) => Ok((s, either)),
+    }
 }
 
 fn parse_paren(s: &Input) -> IResult<&Input, Expr> {
