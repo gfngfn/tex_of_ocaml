@@ -10,10 +10,17 @@ impl Ident {
 }
 
 #[derive(Debug)]
+pub enum Const {
+    Int(i32),
+    String(String),
+}
+
+#[derive(Debug)]
 pub enum Expr {
     Var(Ident),
     Lambda(Ident, Box<Expr>),
     Apply(Box<Expr>, Box<Expr>),
+    Const(Const),
 }
 
 #[derive(Debug)]
@@ -22,4 +29,5 @@ pub enum Instruction {
     Closure(Box<List<Instruction>>),
     Return,
     Apply,
+    Const(Const),
 }

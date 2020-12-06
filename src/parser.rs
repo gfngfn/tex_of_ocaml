@@ -9,7 +9,7 @@ use nom::{
 use std::char;
 
 use crate::list::List;
-use crate::syntax::{Expr, Ident};
+use crate::syntax::{Const, Expr, Ident};
 
 type Input = str;
 
@@ -72,7 +72,7 @@ fn parse_single_list<'a>(s: &'a Input) -> IResult<&'a Input, (Expr, List<Expr>)>
 }
 
 fn parse_single(s: &Input) -> IResult<&Input, Expr> {
-    alt((parse_variable, parse_paren))(s)
+    alt((parse_variable, parse_constant, parse_paren))(s)
 }
 
 fn parse_variable(s: &Input) -> IResult<&Input, Expr> {
@@ -92,4 +92,22 @@ fn parse_paren(s: &Input) -> IResult<&Input, Expr> {
     let (s, _) = skip_space(s)?;
     let (s, _) = tag(")")(s)?;
     Ok((s, e))
+}
+
+fn parse_constant(s: &Input) -> IResult<&Input, Expr> {
+    alt((parse_integer_literal, parse_string_literal))(s)
+}
+
+fn parse_integer_literal(s: &Input) -> IResult<&Input, Expr> {
+    let (s, nums) = take_while1(char::is_numeric)(s)?;
+    let n: i32 = nums.parse().unwrap();
+    Ok((s, Expr::Const(Const::Int(n))))
+}
+
+fn parse_string_literal(s: &Input) -> IResult<&Input, Expr> {
+    let (s, _) = tag("\"")(s)?;
+    let (s, contents) = take_while(|ch| ch != '"')(s)?;
+    let (s, _) = tag("\"")(s)?;
+    let contents = contents.to_string();
+    Ok((s, Expr::Const(Const::String(contents))))
 }

@@ -1,1 +1,1 @@
-(fun foo -> fun z -> (fun y -> foo y) z)
+(fun foo -> fun z -> (fun y -> foo y 42 "hoge") z)

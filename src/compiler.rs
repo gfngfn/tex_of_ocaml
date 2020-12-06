@@ -39,5 +39,7 @@ fn iter(lev: Level, levmap: &LevelMap, e: Expr) -> Result<List<Instruction>, Err
                 append(instrs2, List::singleton(Instruction::Apply)),
             ))
         }
+
+        Expr::Const(c) => Ok(List::singleton(Instruction::Const(c))),
     }
 }
