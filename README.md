@@ -19,16 +19,16 @@ $ SRC=examples/example2.txt
 $ TARGET_DIR=_generated/
 $ TARGET_NAME=example2.tex
 
-$ cat $SRC
-(fun x -> x) 42
-
+# Prepare the target directory:
 $ mkdir -p $TARGET_DIR
-
 $ cp src_tex/secd.sty $TARGET_DIR
 
+# Compile a source file to target code:
+$ cat $SRC
+(fun x -> x) 42
 $ cargo run $SRC -o $TARGET_DIR/$TARGET_NAME
 
+# Evaluate target code and produce a PDF file:
 $ cd $TARGET_DIR
-
 $ latexmk $TARGET_NAME
 ```
