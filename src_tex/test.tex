@@ -12,7 +12,7 @@
 %%     CONST "baz"; APPLY ]
 %%   ```
 \edef\resultAi{%
-  \secd@EvalAndShowString{%
+  \secd@EvalAndShow{%
     \secd@Run{}{}{%
       \secd@CLOSURE{%
         \secd@CONST{\secd@STRING{foo}\secd@ENDVAL}%
@@ -40,7 +40,7 @@
 %%     CONST "foo"; APPLY ]
 %%   ```
 \edef\resultAii{%
-  \secd@EvalAndShowString{%
+  \secd@EvalAndShow{%
     \secd@Run{}{}{%
       \secd@CLOSURE{%
         \secd@CLOSURE{%
@@ -69,7 +69,7 @@
 %%     PRIM + ]
 %%   ```
 \edef\resultBi{%
-  \secd@EvalAndShowInt{%
+  \secd@EvalAndShow{%
     \secd@Run{}{}{%
       \secd@CONST{\secd@INT{oooooooooooooo}\secd@ENDVAL}%
       \secd@CONST{\secd@INT{ooooooooo}\secd@ENDVAL}%
@@ -86,7 +86,7 @@
 %%     PRIM - ]
 %%   ```
 \edef\resultBii{%
-  \secd@EvalAndShowInt{%
+  \secd@EvalAndShow{%
     \secd@Run{}{}{%
       \secd@CONST{\secd@INT{oooooooooooooo}\secd@ENDVAL}%
       \secd@CONST{\secd@INT{ooooooooo}\secd@ENDVAL}%
@@ -103,7 +103,7 @@
 %%     PRIM * ]
 %%   ```
 \edef\resultBiii{%
-  \secd@EvalAndShowInt{%
+  \secd@EvalAndShow{%
     \secd@Run{}{}{%
       \secd@CONST{\secd@INT{oooooooooooooo}\secd@ENDVAL}%
       \secd@CONST{\secd@INT{ooo}\secd@ENDVAL}%
