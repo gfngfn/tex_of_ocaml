@@ -1,4 +1,4 @@
-use clap::Clap;
+use clap::Parser;
 use std::fs;
 use std::io::prelude::*;
 
@@ -11,7 +11,7 @@ mod syntax;
 
 use error::Error;
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(
     name = "tex_of_ocaml",
     version = "0.1.0",
