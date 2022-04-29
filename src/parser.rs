@@ -233,6 +233,10 @@ mod tests {
         assert_eq!(
             apply(lambda("x", apply(ident("x"), ident("y"))), ident("z")),
             parse("(fun x -> x y) z").unwrap()
-        )
+        );
+        assert_eq!(
+            apply(lambda("x", ident("x")), int_const(1)),
+            parse("let x = 1 in x").unwrap()
+        );
     }
 }

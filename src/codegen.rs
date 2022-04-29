@@ -1,4 +1,4 @@
-use crate::syntax::{Const, Instruction};
+use crate::syntax::{Const, Instruction, Primitive};
 
 const PREFIX: &str = "\\secd@";
 const DOCUMENT_CLASS: &str = "jsarticle";
@@ -7,6 +7,20 @@ const RESULT_NAME: &str = "result";
 
 pub trait Serialization {
     fn serialize(self) -> String;
+}
+
+impl Serialization for Primitive {
+    fn serialize(self) -> String {
+        let s = match self {
+            Primitive::Add => "PrimitiveIntAdd",
+            Primitive::Sub => "PrimitiveIntSub",
+            Primitive::Mult => "PrimitiveIntMult",
+            Primitive::Append => "PrimitiveStringAppend",
+            Primitive::Arabic => "PrimitiveArabic",
+            Primitive::IsZero => "PrimitiveIntIsZero",
+        };
+        s.to_string()
+    }
 }
 
 impl Serialization for Vec<Instruction> {
@@ -56,7 +70,7 @@ impl Serialization for Instruction {
                 }
             },
             Instruction::Primitive(prim) => {
-                let cmd = prim.command();
+                let cmd = prim.serialize();
                 format!("{}PRIM{{{}{}}}", PREFIX, PREFIX, cmd)
             }
         }
@@ -69,4 +83,26 @@ pub fn output(instrs: Vec<Instruction>) -> String {
         DOCUMENT_CLASS, VM_PACKAGE_NAME, RESULT_NAME,
         PREFIX, code, RESULT_NAME
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn output_tests() {
+        assert_eq!("\\secd@ACCESS{*****}", Instruction::Access(5).serialize());
+        assert_eq!(
+            "\\secd@CONST{\\secd@INT{oooooooo}\\secd@ENDVAL}",
+            Instruction::Const(Const::Int(8)).serialize()
+        );
+        assert_eq!(
+            "\\secd@CONST{\\secd@STRING{foo}\\secd@ENDVAL}",
+            Instruction::Const(Const::String("foo".to_string())).serialize()
+        );
+        assert_eq!(
+            "\\secd@PRIM{\\secd@PrimitiveIntAdd}",
+            Instruction::Primitive(Primitive::Add).serialize()
+        );
+    }
 }

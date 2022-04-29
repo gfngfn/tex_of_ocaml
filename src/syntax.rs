@@ -35,17 +35,6 @@ impl Primitive {
             Primitive::IsZero => 1,
         }
     }
-
-    pub fn command(&self) -> &str {
-        match self {
-            Primitive::Add => "PrimitiveIntAdd",
-            Primitive::Sub => "PrimitiveIntSub",
-            Primitive::Mult => "PrimitiveIntMult",
-            Primitive::Append => "PrimitiveStringAppend",
-            Primitive::Arabic => "PrimitiveArabic",
-            Primitive::IsZero => "PrimitiveIntIsZero",
-        }
-    }
 }
 
 #[derive(PartialEq, Debug)]
