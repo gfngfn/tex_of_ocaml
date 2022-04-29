@@ -18,23 +18,31 @@ enum IdentResult {
 
 type Input = str;
 
-pub type Error<'a> = nom::Err<nom::error::Error<&'a Input>>;
+#[derive(Debug)]
+pub enum Error {
+    NotCompletelyConsumed(String),
+    Other(String),
+}
 
-pub fn parse(s: &str) -> Result<Expr, Error> {
-    match tuple((skip_space, parse_main, skip_space))(s) {
+pub fn parse(input: &String) -> Result<Expr, Error> {
+    match tuple((skip_space, parse_main, skip_space))(&input) {
         Ok((s, ((), e, ()))) => {
             if s.is_empty() {
                 Ok(e)
             } else {
-                Err(error(s))
+                Err(Error::NotCompletelyConsumed(s.to_string()))
             }
         }
-        Err(err) => Err(err),
+        Err(err) => {
+            // Due to the lifetime limitation,
+            // `err` cannot be directly returned here.
+            Err(Error::Other(format!("{}", err)))
+        }
     }
 }
 
-fn error(s: &Input) -> Error {
-    nom::Err::Error(make_error(s, ErrorKind::Verify))
+fn error(s: &str, kind: ErrorKind) -> nom::Err<nom::error::Error<&str>> {
+    nom::Err::Error(make_error(s, kind))
 }
 
 fn skip_space(s: &Input) -> IResult<&Input, ()> {
@@ -58,7 +66,7 @@ fn parse_abstraction(s: &Input) -> IResult<&Input, Expr> {
     let x: Ident = {
         match ires {
             IdentResult::Ident(x) => Ok(x),
-            _ => Err(error(s)),
+            _ => Err(error(s, ErrorKind::Verify)),
         }
     }?;
     let (s, _) = skip_space(s)?;
@@ -90,7 +98,7 @@ fn parse_let(s: &Input) -> IResult<&Input, Expr> {
     let x: Ident = {
         match ires {
             IdentResult::Ident(x) => Ok(x),
-            _ => Err(error(s)),
+            _ => Err(error(s, ErrorKind::Verify)),
         }
     }?;
     let (s, _) = skip_space(s)?;
@@ -161,7 +169,7 @@ fn parse_ident(s: &Input) -> IResult<&Input, IdentResult> {
         alphas => Some(IdentResult::Ident(Ident::new(alphas))),
     })(s)?;
     match opt {
-        None => Err(error(s)),
+        None => Err(error(s, ErrorKind::Verify)),
         Some(ires) => Ok((s, ires)),
     }
 }

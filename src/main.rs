@@ -27,40 +27,33 @@ struct Opts {
 
 fn main() {
     let opts = Opts::parse();
-    run(opts);
-}
-
-fn run(opts: Opts) {
-    let input_path: &String = &opts.input;
-    match fs::read_to_string(input_path).map_err(Error::of_io_error) {
-        Err(err) => println!("Error: {:?}", err),
-
-        Ok(s) => {
-            let input = &s;
-            match parser::parse(input).map_err(Error::of_parse_error) {
-                Ok(e) => {
-                    /* println!("Expression: {:?}", e); */
-                    match compiler::compile(e) {
-                        Ok(instrs) => {
-                            /* println!("Instruction: {:?}", instrs); */
-                            let code = codegen::output(instrs);
-                            /* println!("Code: {:?}", code); */
-                            if let Some(output_path) = opts.output.as_ref() {
-                                let res = output(output_path, &code);
-                                match res {
-                                    Ok(()) => println!("Output written."),
-                                    Err(err) => println!("Error: {:?}", err),
-                                }
-                            } else {
-                                println!("No output.")
-                            }
-                        }
-                        Err(err) => println!("Error: {:?}", err),
-                    }
-                }
-                Err(err) => println!("Error: {:?}", err),
+    let result = run(opts);
+    match result {
+        Err(err) => {
+            println!("Error: {:?}", err)
+        }
+        Ok(did_output) => {
+            if did_output {
+                println!("Output written.")
+            } else {
+                println!("No output.")
             }
         }
+    }
+}
+
+fn run(opts: Opts) -> Result<bool, Error> {
+    let input_path: &String = &opts.input;
+    let input = fs::read_to_string(input_path).map_err(Error::of_io_error)?;
+    let e = parser::parse(&input).map_err(Error::of_parse_error)?;
+    let instrs = compiler::compile(e).map_err(Error::of_compilation_error)?;
+    let code = codegen::output(instrs);
+    if let Some(output_path) = opts.output.as_ref() {
+        output(output_path, &code)
+            .map(|()| true)
+            .map_err(Error::of_io_error)
+    } else {
+        Ok(false)
     }
 }
 
