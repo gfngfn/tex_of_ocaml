@@ -1,17 +1,23 @@
+use crate::compiler;
 use crate::parser;
 
 #[derive(Debug)]
-pub enum Error<'a> {
-    IoError(std::io::Error),
-    ParseError(parser::Error<'a>),
+pub enum Error {
+    Io(std::io::Error),
+    Parsing(parser::Error),
+    Compilation(compiler::Error),
 }
 
-impl<'a> Error<'a> {
+impl Error {
     pub fn of_io_error(e: std::io::Error) -> Self {
-        Error::IoError(e)
+        Error::Io(e)
     }
 
-    pub fn of_parse_error(e: parser::Error<'a>) -> Self {
-        Error::ParseError(e)
+    pub fn of_parse_error(e: parser::Error) -> Self {
+        Error::Parsing(e)
+    }
+
+    pub fn of_compilation_error(e: compiler::Error) -> Self {
+        Error::Compilation(e)
     }
 }
