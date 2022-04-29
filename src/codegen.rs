@@ -6,11 +6,11 @@ const VM_PACKAGE_NAME: &str = "secd";
 const RESULT_NAME: &str = "result";
 
 pub trait Serialization {
-    fn serialize(self) -> String;
+    fn serialize(&self) -> String;
 }
 
 impl Serialization for Primitive {
-    fn serialize(self) -> String {
+    fn serialize(&self) -> String {
         let s = match self {
             Primitive::Add => "PrimitiveIntAdd",
             Primitive::Sub => "PrimitiveIntSub",
@@ -24,7 +24,7 @@ impl Serialization for Primitive {
 }
 
 impl Serialization for Vec<Instruction> {
-    fn serialize(self) -> String {
+    fn serialize(&self) -> String {
         let mut code = String::new();
         for instr in self {
             let s = instr.serialize();
@@ -35,10 +35,10 @@ impl Serialization for Vec<Instruction> {
 }
 
 impl Serialization for Instruction {
-    fn serialize(self) -> String {
+    fn serialize(&self) -> String {
         match self {
             Instruction::Access(i) => {
-                let stars = (0..i).map(|_| "*").collect::<String>();
+                let stars = (0..*i).map(|_| "*").collect::<String>();
                 format!("{}ACCESS{{{}}}", PREFIX, stars)
             }
             Instruction::Closure(instrs) => {
@@ -54,7 +54,7 @@ impl Serialization for Instruction {
             }
             Instruction::Const(c) => match c {
                 Const::Int(n) => {
-                    let os = (0..n).map(|_| "o").collect::<String>();
+                    let os = (0..*n).map(|_| "o").collect::<String>();
                     format!("{}CONST{{{}INT{{{}}}{}ENDVAL}}", PREFIX, PREFIX, os, PREFIX)
                 }
                 Const::String(s) => format!(
@@ -62,7 +62,7 @@ impl Serialization for Instruction {
                     PREFIX, PREFIX, s, PREFIX
                 ),
                 Const::Bool(b) => {
-                    let tag = if b { "T" } else { "F" };
+                    let tag = if *b { "T" } else { "F" };
                     format!(
                         "{}CONST{{{}BOOL{{{}}}{}ENDVAL}}",
                         PREFIX, PREFIX, tag, PREFIX
