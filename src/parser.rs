@@ -192,3 +192,16 @@ fn parse_string_literal(s: &Input) -> IResult<&Input, Expr> {
     let contents = contents.to_string();
     Ok((s, Expr::Const(Const::String(contents))))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_test() {
+        assert_eq!(
+            Expr::Var(Ident::of_string("x".to_string())),
+            parse("x").unwrap()
+        );
+    }
+}

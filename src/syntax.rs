@@ -7,14 +7,14 @@ impl Ident {
     }
 }
 
-#[derive(Debug)]
+#[derive(PartialEq, Debug)]
 pub enum Const {
     Int(i32),
     String(String),
     Bool(bool),
 }
 
-#[derive(Debug)]
+#[derive(PartialEq, Debug)]
 pub enum Primitive {
     Add,
     Sub,
@@ -48,7 +48,7 @@ impl Primitive {
     }
 }
 
-#[derive(Debug)]
+#[derive(PartialEq, Debug)]
 pub enum Expr {
     Var(Ident),
     Lambda(Ident, Box<Expr>),
@@ -58,7 +58,7 @@ pub enum Expr {
     Primitive(Primitive),
 }
 
-#[derive(Debug)]
+#[derive(PartialEq, Debug)]
 pub enum Instruction {
     Access(i32),
     Closure(Vec<Instruction>),
