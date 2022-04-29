@@ -2,8 +2,8 @@
 pub struct Ident(String);
 
 impl Ident {
-    pub fn of_string(s: String) -> Self {
-        Ident(s)
+    pub fn new(s: &str) -> Self {
+        Ident(s.to_string())
     }
 }
 

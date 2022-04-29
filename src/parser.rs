@@ -158,7 +158,7 @@ fn parse_ident(s: &Input) -> IResult<&Input, IdentResult> {
         "append" => Some(IdentResult::Primitive(Primitive::Append)),
         "arabic" => Some(IdentResult::Primitive(Primitive::Arabic)),
         "iszero" => Some(IdentResult::Primitive(Primitive::IsZero)),
-        alphas => Some(IdentResult::Ident(Ident::of_string(alphas.to_string()))),
+        alphas => Some(IdentResult::Ident(Ident::new(alphas))),
     })(s)?;
     match opt {
         None => Err(error(s)),
@@ -199,9 +199,6 @@ mod tests {
 
     #[test]
     fn parse_test() {
-        assert_eq!(
-            Expr::Var(Ident::of_string("x".to_string())),
-            parse("x").unwrap()
-        );
+        assert_eq!(Expr::Var(Ident::new("x")), parse("x").unwrap());
     }
 }
