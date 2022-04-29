@@ -1,22 +1,20 @@
-use crate::list::List;
-
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub struct Ident(String);
 
 impl Ident {
-    pub fn of_string(s: String) -> Self {
-        Ident(s)
+    pub fn new(s: &str) -> Self {
+        Ident(s.to_string())
     }
 }
 
-#[derive(Debug)]
+#[derive(PartialEq, Debug)]
 pub enum Const {
     Int(i32),
     String(String),
     Bool(bool),
 }
 
-#[derive(Debug)]
+#[derive(PartialEq, Debug)]
 pub enum Primitive {
     Add,
     Sub,
@@ -37,20 +35,9 @@ impl Primitive {
             Primitive::IsZero => 1,
         }
     }
-
-    pub fn command(&self) -> &str {
-        match self {
-            Primitive::Add => "PrimitiveIntAdd",
-            Primitive::Sub => "PrimitiveIntSub",
-            Primitive::Mult => "PrimitiveIntMult",
-            Primitive::Append => "PrimitiveStringAppend",
-            Primitive::Arabic => "PrimitiveArabic",
-            Primitive::IsZero => "PrimitiveIntIsZero",
-        }
-    }
 }
 
-#[derive(Debug)]
+#[derive(PartialEq, Debug)]
 pub enum Expr {
     Var(Ident),
     Lambda(Ident, Box<Expr>),
@@ -60,13 +47,13 @@ pub enum Expr {
     Primitive(Primitive),
 }
 
-#[derive(Debug)]
+#[derive(PartialEq, Debug)]
 pub enum Instruction {
     Access(i32),
-    Closure(Box<List<Instruction>>),
+    Closure(Vec<Instruction>),
     Return,
     Apply,
-    If(Box<List<Instruction>>, Box<List<Instruction>>),
+    If(Vec<Instruction>, Vec<Instruction>),
     Const(Const),
     Primitive(Primitive),
 }

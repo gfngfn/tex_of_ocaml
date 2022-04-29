@@ -5,7 +5,6 @@ use std::io::prelude::*;
 mod codegen;
 mod compiler;
 mod error;
-mod list;
 mod parser;
 mod syntax;
 
@@ -65,7 +64,7 @@ fn run(opts: Opts) {
     }
 }
 
-fn output(output_path: &String, code: &str) -> std::io::Result<()> {
+fn output(output_path: &str, code: &str) -> std::io::Result<()> {
     let mut out = fs::File::create(output_path)?;
     out.write_all(code.as_bytes())
 }

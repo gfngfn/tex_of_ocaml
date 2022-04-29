@@ -8,7 +8,6 @@ use nom::{
 };
 use std::char;
 
-use crate::list::List;
 use crate::syntax::{Const, Expr, Ident, Primitive};
 
 enum IdentResult {
@@ -21,7 +20,7 @@ type Input = str;
 
 pub type Error<'a> = nom::Err<nom::error::Error<&'a Input>>;
 
-pub fn parse<'a>(s: &'a str) -> Result<Expr, Error<'a>> {
+pub fn parse(s: &str) -> Result<Expr, Error> {
     match tuple((skip_space, parse_main, skip_space))(s) {
         Ok((s, ((), e, ()))) => {
             if s.is_empty() {
@@ -34,7 +33,7 @@ pub fn parse<'a>(s: &'a str) -> Result<Expr, Error<'a>> {
     }
 }
 
-fn error<'a>(s: &'a Input) -> Error<'a> {
+fn error(s: &Input) -> Error {
     nom::Err::Error(make_error(s, ErrorKind::Verify))
 }
 
@@ -109,17 +108,23 @@ fn parse_let(s: &Input) -> IResult<&Input, Expr> {
 }
 
 fn parse_application(s: &Input) -> IResult<&Input, Expr> {
-    let (s, (e, eargs)) = parse_single_list(s)?;
-    let eret: Expr = eargs.foldl(|eapp, earg| Expr::Apply(Box::new(eapp), Box::new(earg)), e);
-    Ok((s, eret))
+    let (s, (mut e, eargs)) = parse_single_list(s)?;
+    for earg in eargs {
+        e = Expr::Apply(Box::new(e), Box::new(earg));
+    }
+    Ok((s, e))
 }
 
-fn parse_single_list<'a>(s: &'a Input) -> IResult<&'a Input, (Expr, List<Expr>)> {
+fn parse_single_list(s: &Input) -> IResult<&Input, (Expr, Vec<Expr>)> {
     map(
         tuple((parse_single, opt(tuple((skip_space, parse_single_list))))),
         |(e, tail_opt)| match tail_opt {
-            Some(((), (e2, eargs))) => (e, List::Cons(e2, Box::new(eargs))),
-            None => (e, List::Nil),
+            Some(((), (e2, mut eargs0))) => {
+                let mut eargs = vec![e2];
+                eargs.append(&mut eargs0);
+                (e, eargs)
+            }
+            None => (e, Vec::new()),
         },
     )(s)
 }
@@ -153,7 +158,7 @@ fn parse_ident(s: &Input) -> IResult<&Input, IdentResult> {
         "append" => Some(IdentResult::Primitive(Primitive::Append)),
         "arabic" => Some(IdentResult::Primitive(Primitive::Arabic)),
         "iszero" => Some(IdentResult::Primitive(Primitive::IsZero)),
-        alphas => Some(IdentResult::Ident(Ident::of_string(alphas.to_string()))),
+        alphas => Some(IdentResult::Ident(Ident::new(alphas))),
     })(s)?;
     match opt {
         None => Err(error(s)),
@@ -186,4 +191,52 @@ fn parse_string_literal(s: &Input) -> IResult<&Input, Expr> {
     let (s, _) = tag("\"")(s)?;
     let contents = contents.to_string();
     Ok((s, Expr::Const(Const::String(contents))))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn ident(x: &str) -> Expr {
+        Expr::Var(Ident::new(x))
+    }
+
+    fn apply(e1: Expr, e2: Expr) -> Expr {
+        Expr::Apply(Box::new(e1), Box::new(e2))
+    }
+
+    fn lambda(x: &str, e: Expr) -> Expr {
+        Expr::Lambda(Ident::new(x), Box::new(e))
+    }
+
+    fn int_const(n: i32) -> Expr {
+        Expr::Const(Const::Int(n))
+    }
+
+    fn string_const(s: &str) -> Expr {
+        Expr::Const(Const::String(s.to_string()))
+    }
+
+    #[test]
+    fn parse_tests() {
+        assert_eq!(int_const(42), parse("42").unwrap());
+        assert_eq!(string_const("foo"), parse("\"foo\"").unwrap());
+        assert_eq!(ident("x"), parse("x").unwrap());
+        assert_eq!(
+            apply(apply(ident("x"), ident("y")), ident("z")),
+            parse("x y z").unwrap()
+        );
+        assert_eq!(
+            lambda("x", apply(ident("x"), int_const(1))),
+            parse("fun x -> x 1").unwrap()
+        );
+        assert_eq!(
+            apply(lambda("x", apply(ident("x"), ident("y"))), ident("z")),
+            parse("(fun x -> x y) z").unwrap()
+        );
+        assert_eq!(
+            apply(lambda("x", ident("x")), int_const(1)),
+            parse("let x = 1 in x").unwrap()
+        );
+    }
 }

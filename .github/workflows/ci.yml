@@ -1,0 +1,31 @@
+name: CI
+on:
+  - pull_request
+  - push
+jobs:
+  build_and_test:
+    name: Build and test
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Build Rust sources
+        run: cargo build --release --all-features
+
+      - name: Apply Clippy
+        run: cargo clippy --all
+
+      - name: Run tests
+        run: cargo test
