@@ -197,8 +197,42 @@ fn parse_string_literal(s: &Input) -> IResult<&Input, Expr> {
 mod tests {
     use super::*;
 
+    fn ident(x: &str) -> Expr {
+        Expr::Var(Ident::new(x))
+    }
+
+    fn apply(e1: Expr, e2: Expr) -> Expr {
+        Expr::Apply(Box::new(e1), Box::new(e2))
+    }
+
+    fn lambda(x: &str, e: Expr) -> Expr {
+        Expr::Lambda(Ident::new(x), Box::new(e))
+    }
+
+    fn int_const(n: i32) -> Expr {
+        Expr::Const(Const::Int(n))
+    }
+
+    fn string_const(s: &str) -> Expr {
+        Expr::Const(Const::String(s.to_string()))
+    }
+
     #[test]
-    fn parse_test() {
-        assert_eq!(Expr::Var(Ident::new("x")), parse("x").unwrap());
+    fn parse_tests() {
+        assert_eq!(int_const(42), parse("42").unwrap());
+        assert_eq!(string_const("foo"), parse("\"foo\"").unwrap());
+        assert_eq!(ident("x"), parse("x").unwrap());
+        assert_eq!(
+            apply(apply(ident("x"), ident("y")), ident("z")),
+            parse("x y z").unwrap()
+        );
+        assert_eq!(
+            lambda("x", apply(ident("x"), int_const(1))),
+            parse("fun x -> x 1").unwrap()
+        );
+        assert_eq!(
+            apply(lambda("x", apply(ident("x"), ident("y"))), ident("z")),
+            parse("(fun x -> x y) z").unwrap()
+        )
     }
 }
