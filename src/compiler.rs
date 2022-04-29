@@ -1,6 +1,5 @@
 use im::hashmap::HashMap;
 
-use crate::list::{append, cons, List};
 use crate::syntax::{Expr, Ident, Instruction};
 
 type Level = i32;
@@ -13,76 +12,66 @@ pub enum Error {
     BugOfUnknownArity(i32),
 }
 
-pub fn compile(e: Expr) -> Result<List<Instruction>, Error> {
-    iter(0, &LevelMap::new(), e)
+pub trait Compilation {
+    type Target;
+    fn compile(self: Self, lev: Level, levmap: &LevelMap) -> Result<Self::Target, Error>;
 }
 
-fn iter(lev: Level, levmap: &LevelMap, e: Expr) -> Result<List<Instruction>, Error> {
-    match e {
-        Expr::Var(x) => levmap
-            .get(&x)
-            .map(|xlev| List::singleton(Instruction::Access(lev - xlev)))
-            .ok_or_else(|| Error::UnboundVariable(x)),
+impl Compilation for Expr {
+    type Target = Vec<Instruction>;
 
-        Expr::Lambda(x, e0) => {
-            let instrs0 = iter(lev + 1, &levmap.update(x, lev + 1), *e0)?;
-            Ok(List::singleton(Instruction::Closure(Box::new(append(
-                instrs0,
-                List::singleton(Instruction::Return),
-            )))))
-        }
-
-        Expr::Apply(e1, e2) => {
-            let instrs1 = iter(lev, levmap, *e1)?;
-            let instrs2 = iter(lev, levmap, *e2)?;
-            Ok(append(
-                instrs1,
-                append(instrs2, List::singleton(Instruction::Apply)),
-            ))
-        }
-
-        Expr::If(e0, e1, e2) => {
-            let instrs0 = iter(lev, levmap, *e0)?;
-            let instrs1 = iter(lev, levmap, *e1)?;
-            let instrs2 = iter(lev, levmap, *e2)?;
-            Ok(append(
-                instrs0,
-                List::singleton(Instruction::If(Box::new(instrs1), Box::new(instrs2))),
-            ))
-        }
-
-        Expr::Const(c) => Ok(List::singleton(Instruction::Const(c))),
-
-        Expr::Primitive(prim) => match prim.arity() {
-            1 => {
-                let sub: List<Instruction> = cons(
-                    Instruction::Access(0),
-                    cons(
-                        Instruction::Primitive(prim),
-                        List::singleton(Instruction::Return),
-                    ),
-                );
-                Ok(List::singleton(Instruction::Closure(Box::new(sub))))
+    fn compile(self, lev: Level, levmap: &LevelMap) -> Result<Self::Target, Error> {
+        match self {
+            Expr::Var(x) => match levmap.get(&x) {
+                Some(lev_x) => Ok(vec![Instruction::Access(lev - lev_x)]),
+                None => Err(Error::UnboundVariable(x)),
+            },
+            Expr::Lambda(x, e0) => {
+                let mut instrs0 = e0.compile(lev + 1, &levmap.update(x, lev + 1))?;
+                instrs0.push(Instruction::Return);
+                Ok(vec![Instruction::Closure(Box::new(instrs0))])
             }
-            2 => {
-                let app: List<Instruction> = cons(
-                    Instruction::Access(1),
-                    cons(
+            Expr::Apply(e1, e2) => {
+                let mut instrs1 = e1.compile(lev, levmap)?;
+                let mut instrs2 = e2.compile(lev, levmap)?;
+                instrs1.append(&mut instrs2);
+                instrs1.push(Instruction::Apply);
+                Ok(instrs1)
+            }
+            Expr::If(e0, e1, e2) => {
+                let mut instrs0 = e0.compile(lev, levmap)?;
+                let instrs1 = e1.compile(lev, levmap)?;
+                let instrs2 = e2.compile(lev, levmap)?;
+                instrs0.push(Instruction::If(Box::new(instrs1), Box::new(instrs2)));
+                Ok(instrs0)
+            }
+            Expr::Const(c) => Ok(vec![Instruction::Const(c)]),
+            Expr::Primitive(prim) => match prim.arity() {
+                1 => {
+                    let sub = vec![
                         Instruction::Access(0),
-                        List::singleton(Instruction::Primitive(prim)),
-                    ),
-                );
-                let inner = Instruction::Closure(Box::new(append(
-                    app,
-                    List::singleton(Instruction::Return),
-                )));
-                let outer = Instruction::Closure(Box::new(cons(
-                    inner,
-                    List::singleton(Instruction::Return),
-                )));
-                Ok(List::singleton(outer))
-            }
-            arity => Err(Error::BugOfUnknownArity(arity)),
-        },
+                        Instruction::Primitive(prim),
+                        Instruction::Return,
+                    ];
+                    Ok(vec![Instruction::Closure(Box::new(sub))])
+                }
+                2 => {
+                    let app = vec![
+                        Instruction::Access(1),
+                        Instruction::Access(0),
+                        Instruction::Primitive(prim),
+                        Instruction::Return,
+                    ];
+                    let inner = vec![Instruction::Closure(Box::new(app)), Instruction::Return];
+                    let outer = vec![Instruction::Closure(Box::new(inner))];
+                    Ok(outer)
+                }
+                arity => Err(Error::BugOfUnknownArity(arity)),
+            },
+        }
     }
+}
+
+pub fn compile(e: Expr) -> Result<Vec<Instruction>, Error> {
+    e.compile(0, &LevelMap::new())
 }

@@ -8,7 +8,6 @@ use nom::{
 };
 use std::char;
 
-use crate::list::List;
 use crate::syntax::{Const, Expr, Ident, Primitive};
 
 enum IdentResult {
@@ -109,17 +108,23 @@ fn parse_let(s: &Input) -> IResult<&Input, Expr> {
 }
 
 fn parse_application(s: &Input) -> IResult<&Input, Expr> {
-    let (s, (e, eargs)) = parse_single_list(s)?;
-    let eret: Expr = eargs.foldl(|eapp, earg| Expr::Apply(Box::new(eapp), Box::new(earg)), e);
-    Ok((s, eret))
+    let (s, (mut e, eargs)) = parse_single_list(s)?;
+    for earg in eargs {
+        e = Expr::Apply(Box::new(e), Box::new(earg));
+    }
+    Ok((s, e))
 }
 
-fn parse_single_list<'a>(s: &'a Input) -> IResult<&'a Input, (Expr, List<Expr>)> {
+fn parse_single_list<'a>(s: &'a Input) -> IResult<&'a Input, (Expr, Vec<Expr>)> {
     map(
         tuple((parse_single, opt(tuple((skip_space, parse_single_list))))),
         |(e, tail_opt)| match tail_opt {
-            Some(((), (e2, eargs))) => (e, List::Cons(e2, Box::new(eargs))),
-            None => (e, List::Nil),
+            Some(((), (e2, mut eargs0))) => {
+                let mut eargs = vec![e2];
+                eargs.append(&mut eargs0);
+                (e, eargs)
+            }
+            None => (e, Vec::new()),
         },
     )(s)
 }

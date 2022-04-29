@@ -5,7 +5,6 @@ use std::io::prelude::*;
 mod codegen;
 mod compiler;
 mod error;
-mod list;
 mod parser;
 mod syntax;
 

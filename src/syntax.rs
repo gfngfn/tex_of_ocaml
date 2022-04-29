@@ -1,5 +1,3 @@
-use crate::list::List;
-
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub struct Ident(String);
 
@@ -63,10 +61,10 @@ pub enum Expr {
 #[derive(Debug)]
 pub enum Instruction {
     Access(i32),
-    Closure(Box<List<Instruction>>),
+    Closure(Box<Vec<Instruction>>),
     Return,
     Apply,
-    If(Box<List<Instruction>>, Box<List<Instruction>>),
+    If(Box<Vec<Instruction>>, Box<Vec<Instruction>>),
     Const(Const),
     Primitive(Primitive),
 }
