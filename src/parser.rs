@@ -24,8 +24,8 @@ pub enum Error {
     Other(String),
 }
 
-pub fn parse(input: &String) -> Result<Expr, Error> {
-    match tuple((skip_space, parse_main, skip_space))(&input) {
+pub fn parse(input: &str) -> Result<Expr, Error> {
+    match tuple((skip_space, parse_main, skip_space))(input) {
         Ok((s, ((), e, ()))) => {
             if s.is_empty() {
                 Ok(e)
