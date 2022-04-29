@@ -20,7 +20,7 @@ type Input = str;
 
 pub type Error<'a> = nom::Err<nom::error::Error<&'a Input>>;
 
-pub fn parse<'a>(s: &'a str) -> Result<Expr, Error<'a>> {
+pub fn parse(s: &str) -> Result<Expr, Error> {
     match tuple((skip_space, parse_main, skip_space))(s) {
         Ok((s, ((), e, ()))) => {
             if s.is_empty() {
@@ -33,7 +33,7 @@ pub fn parse<'a>(s: &'a str) -> Result<Expr, Error<'a>> {
     }
 }
 
-fn error<'a>(s: &'a Input) -> Error<'a> {
+fn error(s: &Input) -> Error {
     nom::Err::Error(make_error(s, ErrorKind::Verify))
 }
 
@@ -115,7 +115,7 @@ fn parse_application(s: &Input) -> IResult<&Input, Expr> {
     Ok((s, e))
 }
 
-fn parse_single_list<'a>(s: &'a Input) -> IResult<&'a Input, (Expr, Vec<Expr>)> {
+fn parse_single_list(s: &Input) -> IResult<&Input, (Expr, Vec<Expr>)> {
     map(
         tuple((parse_single, opt(tuple((skip_space, parse_single_list))))),
         |(e, tail_opt)| match tail_opt {
