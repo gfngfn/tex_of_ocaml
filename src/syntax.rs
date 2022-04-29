@@ -61,10 +61,10 @@ pub enum Expr {
 #[derive(Debug)]
 pub enum Instruction {
     Access(i32),
-    Closure(Box<Vec<Instruction>>),
+    Closure(Vec<Instruction>),
     Return,
     Apply,
-    If(Box<Vec<Instruction>>, Box<Vec<Instruction>>),
+    If(Vec<Instruction>, Vec<Instruction>),
     Const(Const),
     Primitive(Primitive),
 }

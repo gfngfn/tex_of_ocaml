@@ -6,11 +6,11 @@ const VM_PACKAGE_NAME: &str = "secd";
 const RESULT_NAME: &str = "result";
 
 pub trait Serialization {
-    fn serialize(self: Self) -> String;
+    fn serialize(self) -> String;
 }
 
 impl Serialization for Vec<Instruction> {
-    fn serialize(self: Self) -> String {
+    fn serialize(self) -> String {
         let mut code = String::new();
         for instr in self {
             let s = instr.serialize();
@@ -21,7 +21,7 @@ impl Serialization for Vec<Instruction> {
 }
 
 impl Serialization for Instruction {
-    fn serialize(self: Self) -> String {
+    fn serialize(self) -> String {
         match self {
             Instruction::Access(i) => {
                 let stars = (0..i).map(|_| "*").collect::<String>();
